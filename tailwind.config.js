@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        urbanist: ['Urbanist', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+      },
       colors: {
         primary: '#0066cc',
         'primary-dark': '#004499',

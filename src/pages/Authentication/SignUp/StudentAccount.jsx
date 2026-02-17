@@ -34,6 +34,7 @@ const statesAndDistricts = {
 
 export default function StudentAccount() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     dateOfBirth: '',
     gender: '',
@@ -121,7 +122,7 @@ export default function StudentAccount() {
 
   const handleSubmit = () => {
     console.log('Student Account Data:', formData);
-    alert('Student account created successfully!');
+    setSuccessMessage('Student account created successfully!');
     setFormData({
       dateOfBirth: '',
       gender: '',
@@ -134,6 +135,9 @@ export default function StudentAccount() {
     });
     setCurrentStep(0);
     setErrors({});
+    setTimeout(() => {
+      setSuccessMessage('');
+    }, 2000);
   };
 
   const currentStepData = steps[currentStep];
@@ -171,6 +175,11 @@ export default function StudentAccount() {
           </div>
 
           {/* Form */}
+          {successMessage && (
+            <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
+              {successMessage}
+            </div>
+          )}
           <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} className="space-y-6">
             {/* Question */}
             <div>

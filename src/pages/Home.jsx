@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import homeImage from '../assets/images/home.png';
+import { Navbar } from '../components/Navbar';
 
 const shimmerStyle = `
   @keyframes shimmer {
@@ -70,28 +71,9 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins">
       <style>{shimmerStyle}</style>
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">DA</span>
-            </div>
-            <h1 className="text-xl font-bold text-gray-900">Docu-Agent</h1>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#how" className="text-gray-700 hover:text-blue-600 font-medium text-sm">How It Works</a>
-            <a href="#features" className="text-gray-700 hover:text-blue-600 font-medium text-sm">Features</a>
-            <a href="#results" className="text-gray-700 hover:text-blue-600 font-medium text-sm">Results</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <a href="/login" className="text-gray-700 hover:text-blue-600 font-medium text-sm">Sign In</a>
-            <a href="/signup" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition">Get Started</a>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="py-12 sm:py-18 px-4 relative overflow-hidden">
@@ -99,33 +81,33 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto text-center relative z-10 mt-0">
           {/* Badge */}
-          <div className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+          <div className="inline-block bg-blue-50 text-blue-900 px-4 py-2 rounded-full text-sm font-semibold mb-6">
             AI-Powered Scholarship Finder
           </div>
 
           {/* Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-            Find Government Scholarships You <span className="text-blue-600">Deserve</span>
+          <h1 className="text-3xl text-[32px] md:text-[48px] font-semibold text-slate-900 mb-4 leading-tight">
+            Find Government Scholarships You <span className="text-blue-900">Deserve</span>
           </h1>
 
           {/* Subtext */}
-          <p className="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-2xl mx-auto">
             Stop reading long PDFs. Let our AI instantly match you with government scholarships and schemes you're eligible for.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
-            <a href="/signup" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm sm:text-base text-center transition">
+            <a href="/signup" className="px-8 py-3 bg-blue-900 text-white rounded-lg hover:bg-blue-800 font-semibold text-sm sm:text-base text-center transition">
               Check Eligibility Free
             </a>
-            <a href="#how" className="px-8 py-3 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-semibold text-sm sm:text-base text-center transition">
+            <a href="#how" className="px-8 py-3 border-2 border-blue-900 text-blue-900 rounded-lg hover:bg-blue-50 font-semibold text-sm sm:text-base text-center transition">
               Learn More
             </a>
           </div>
 
           {/* Image */}
           <div className="relative max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl overflow-hidden shadow-xl shimmer-overlay">
+            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl overflow-hidden shadow-xl shimmer-overlay">
               <img 
                 src={homeImage} 
                 alt="AI-Powered Eligibility Analysis" 
@@ -141,7 +123,7 @@ export default function Home() {
       </section>
 
       {/* Trust Stats */}
-      <section className="bg-gray-50 py-12 px-4">
+      <section className="bg-[#F5F7FA] py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="text-center">
@@ -327,7 +309,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-400 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xs">DA</span>
                 </div>
                 <span className="text-white font-bold">Docu-Agent</span>
