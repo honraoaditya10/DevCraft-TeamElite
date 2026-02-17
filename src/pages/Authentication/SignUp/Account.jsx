@@ -1,10 +1,14 @@
 
 
 import { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import StudentAccount from './StudentAccount';
 import NormalUserAccount from './NormalUserAccount';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function Account() {
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -13,6 +17,8 @@ export default function Account() {
     role: 'student',
   });
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -41,14 +47,39 @@ export default function Account() {
     if (errors[name]) setErrors({ ...errors, [name]: '' });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-    } else {
-      console.log('Basic Sign up data:', formData);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      setUser(data.user);
       setSubmitted(true);
+    } catch (error) {
+      setFormError(error.message || 'Signup failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -63,22 +94,27 @@ export default function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 flex items-center justify-center p-4 overflow-y-auto py-8">
+    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins flex items-center justify-center p-4 overflow-y-auto py-8">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">DE</span>
+              <div className="w-10 h-10 bg-blue-900 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">DA</span>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">DevCraft</h1>
+              <h1 className="text-2xl font-bold text-blue-900">Docu-Agent</h1>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h2>
-            <p className="text-gray-600 text-sm">Join our platform and start your journey</p>
+            <p className="text-slate-600 text-sm">Join our platform and start your journey</p>
           </div>
 
           {/* Form */}
+          {formError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+              {formError}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Full Name */}
             <div>
@@ -92,7 +128,7 @@ export default function Account() {
                 placeholder="Enter your full name"
                 value={formData.fullName}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition text-sm ${
+                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition text-sm ${
                   errors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                 }`}
               />
@@ -111,7 +147,7 @@ export default function Account() {
                 placeholder="Enter your email address"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition text-sm ${
+                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition text-sm ${
                   errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                 }`}
               />
@@ -131,7 +167,7 @@ export default function Account() {
                   placeholder="Create a strong password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition pr-10 text-sm ${
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition pr-10 text-sm ${
                     errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                   }`}
                 />
@@ -159,7 +195,7 @@ export default function Account() {
                   placeholder="Re-enter password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition pr-10 text-sm ${
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition pr-10 text-sm ${
                     errors.confirmPassword ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                   }`}
                 />
@@ -187,7 +223,7 @@ export default function Account() {
                     value="student"
                     checked={formData.role === 'student'}
                     onChange={handleChange}
-                    className="w-4 h-4 text-blue-600 cursor-pointer"
+                    className="w-4 h-4 text-blue-900 cursor-pointer"
                   />
                   <span className="ml-3 text-sm font-medium text-gray-800">🎓 Student</span>
                 </label>
@@ -198,7 +234,7 @@ export default function Account() {
                     value="normalUser"
                     checked={formData.role === 'normalUser'}
                     onChange={handleChange}
-                    className="w-4 h-4 text-blue-600 cursor-pointer"
+                    className="w-4 h-4 text-blue-900 cursor-pointer"
                   />
                   <span className="ml-3 text-sm font-medium text-gray-800">👤 Normal User</span>
                 </label>
@@ -209,15 +245,16 @@ export default function Account() {
             {/* Create Account Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold py-2.5 rounded-lg hover:from-blue-700 hover:to-cyan-600 transition duration-200 text-sm mt-6 shadow-md hover:shadow-lg"
+              disabled={isSubmitting}
+              className="w-full bg-blue-900 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-800 transition duration-200 text-sm mt-6 shadow-sm disabled:opacity-70"
             >
-              Create Account
+              {isSubmitting ? 'Creating...' : 'Create Account'}
             </button>
           </form>
 
           {/* Sign In Link */}
-          <p className="text-center text-gray-600 text-sm mt-6">
-            Already have an account? <a href="/login" className="text-blue-600 font-semibold hover:text-blue-700">Sign in</a>
+          <p className="text-center text-slate-600 text-sm mt-6">
+            Already have an account? <a href="/login" className="text-blue-900 font-semibold hover:text-blue-800">Sign in</a>
           </p>
         </div>
       </div>

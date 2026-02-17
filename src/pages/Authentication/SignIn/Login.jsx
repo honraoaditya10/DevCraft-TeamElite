@@ -1,10 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -15,42 +24,81 @@ export default function Login() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-    } else {
-      console.log('Login attempt:', { email, password });
-      alert('Login successful!');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setFormSuccess('');
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      const destination = data.user?.role === 'admin' ? '/admin' : '/dashboard';
+      setUser(data.user);
+      setFormSuccess(
+        data.user?.role === 'admin'
+          ? 'Admin login successful. Redirecting to admin dashboard...'
+          : 'Login successful. Redirecting to your dashboard...'
+      );
       setEmail('');
       setPassword('');
       setErrors({});
+      setTimeout(() => {
+        navigate(destination);
+      }, 600);
+    } catch (error) {
+      setFormError(error.message || 'Login failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
-        <div className="flex gap-6 bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex gap-6 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           {/* Left Section - Form */}
           <div className="w-full lg:w-1/2 p-8 lg:p-12">
             {/* Header */}
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">DA</span>
                 </div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">Docu-Agent</h1>
+                <h1 className="text-2xl font-bold text-blue-900">Docu-Agent</h1>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-              <p className="text-gray-600">Please enter your details to access your dashboard</p>
+              <p className="text-slate-600">Please enter your details to access your dashboard</p>
             </div>
 
             {/* Form */}
+            {formSuccess && (
+              <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
+                {formSuccess}
+              </div>
+            )}
+            {formError && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+                {formError}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-800 mb-2">Email</label>
+                <label htmlFor="email" className="block text-sm font-semibold text-slate-800 mb-2">Email</label>
                 <input
                   type="email"
                   id="email"
@@ -60,7 +108,7 @@ export default function Login() {
                     setEmail(e.target.value);
                     if (errors.email) setErrors({ ...errors, email: '' });
                   }}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition text-sm ${
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition text-sm ${
                     errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                   }`}
                 />
@@ -68,7 +116,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-800 mb-2">Password</label>
+                <label htmlFor="password" className="block text-sm font-semibold text-slate-800 mb-2">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -79,7 +127,7 @@ export default function Login() {
                       setPassword(e.target.value);
                       if (errors.password) setErrors({ ...errors, password: '' });
                     }}
-                    className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 transition pr-10 text-sm ${
+                    className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 transition pr-10 text-sm ${
                       errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
                     }`}
                   />
@@ -99,14 +147,15 @@ export default function Login() {
                   <input type="checkbox" className="w-4 h-4" />
                   <span className="ml-2 text-gray-700">Remember me</span>
                 </label>
-                <a href="#" className="text-blue-600 font-semibold hover:text-blue-700">Forgot Password?</a>
+                <a href="#" className="text-blue-900 font-semibold hover:text-blue-800">Forgot Password?</a>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition duration-200 text-sm"
+                disabled={isSubmitting}
+                className="w-full bg-blue-900 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-800 transition duration-200 text-sm disabled:opacity-70"
               >
-                Log In
+                {isSubmitting ? 'Logging in...' : 'Log In'}
               </button>
             </form>
 
@@ -118,7 +167,7 @@ export default function Login() {
             </div>
 
             {/* Google Button */}
-            <button className="w-full border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition flex items-center justify-center gap-2 text-sm">
+            <button className="w-full border border-slate-200 text-slate-700 font-semibold py-2.5 rounded-lg hover:bg-slate-50 transition flex items-center justify-center gap-2 text-sm">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M23.745 12.27c0-.79-.07-1.54-.216-2.29H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.85c2.27-2.09 3.57-5.17 3.57-8.79z" fill="#4285F4"/>
                 <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.85-3c-1.08.72-2.45 1.13-4.08 1.13-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09C3.05 21.3 7.31 24 12 24z" fill="#34A853"/>
@@ -129,8 +178,8 @@ export default function Login() {
             </button>
 
             {/* Sign Up Link */}
-            <p className="text-center text-gray-600 text-sm mt-6">
-              Don't have an account? <a href="/signup" className="text-blue-600 font-semibold hover:text-blue-700">Sign up</a>
+            <p className="text-center text-slate-600 text-sm mt-6">
+              Don't have an account? <a href="/signup" className="text-blue-900 font-semibold hover:text-blue-800">Sign up</a>
             </p>
           </div>
 
@@ -149,17 +198,7 @@ export default function Login() {
               </svg>
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-white px-6">
-                <h3 className="text-3xl font-bold mb-4">Your Career Growth Starts Here</h3>
-                <div className="flex gap-3 justify-center">
-                  <button className="px-4 py-2 border border-white border-opacity-40 rounded-full text-sm font-semibold backdrop-blur hover:bg-white hover:bg-opacity-10 transition flex items-center gap-2">
-                    <span>👥</span> Industry Expert Trainers
-                  </button>
-                  <button className="px-4 py-2 border border-white border-opacity-40 rounded-full text-sm font-semibold backdrop-blur hover:bg-white hover:bg-opacity-10 transition flex items-center gap-2">
-                    <span>✓</span> 100% Job Assistance
-                  </button>
-                </div>
-              </div>
+             
             </div>
           </div>
         </div>
