@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
+import { TopBar } from '../components/TopBar';
 
 const QuickStatCard = ({ title, value, helper, icon }) => (
-  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100">
+  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm text-slate-500">{title}</p>
@@ -17,26 +19,26 @@ const QuickStatCard = ({ title, value, helper, icon }) => (
   </div>
 );
 
-const SchemeCard = ({ name, description, deadline }) => (
-  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 flex flex-col">
+const SchemeCard = ({ name, description, deadline, statusLabel, viewLabel, deadlineLabel }) => (
+  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">
     <div className="flex items-center justify-between">
       <h3 className="text-base font-semibold text-slate-900">{name}</h3>
       <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">
-        Eligible
+        {statusLabel}
       </span>
     </div>
     <p className="text-sm text-slate-600 mt-3">{description}</p>
     <div className="flex items-center justify-between mt-4">
-      <span className="text-xs text-slate-500">Deadline: {deadline}</span>
-      <button className="text-sm font-medium text-white bg-blue-900 px-4 py-2 rounded-lg hover:bg-blue-800">
-        View Details
+      <span className="text-xs text-slate-500">{deadlineLabel}: {deadline}</span>
+      <button className="text-sm font-medium text-white bg-blue-900 px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+        {viewLabel}
       </button>
     </div>
   </div>
 );
 
 const DocumentStatusRow = ({ label, status, tone }) => (
-  <div className="flex items-center justify-between border-b border-slate-100 py-3 last:border-b-0">
+  <div className="flex items-center justify-between border-b border-slate-100 py-3 last:border-b-0 transition-colors hover:bg-slate-50/60">
     <span className="text-sm text-slate-700">{label}</span>
     <span className={`text-xs font-medium px-2 py-1 rounded-full ${tone}`}>{status}</span>
   </div>
@@ -44,7 +46,7 @@ const DocumentStatusRow = ({ label, status, tone }) => (
 
 const TimelineItem = ({ title, detail, time }) => (
   <div className="relative pl-6">
-    <div className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-blue-900" />
+    <div className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-blue-900 shadow-sm" />
     <p className="text-sm font-medium text-slate-800">{title}</p>
     <p className="text-xs text-slate-500">{detail}</p>
     <p className="text-xs text-slate-400 mt-1">{time}</p>
@@ -54,6 +56,7 @@ const TimelineItem = ({ title, detail, time }) => (
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
@@ -67,6 +70,36 @@ export default function Dashboard() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNavClick = (item) => {
+    if (item === 'Logout') {
+      handleLogout();
+      return;
+    }
+    if (item === 'Profile') {
+      navigate('/profile');
+      return;
+    }
+    if (item === 'My Schemes') {
+      navigate('/my-schemes');
+      return;
+    }
+    if (item === 'Documents') {
+      navigate('/documents');
+      return;
+    }
+    if (item === 'History') {
+      navigate('/history');
+      return;
+    }
+    if (item === 'Help & Support') {
+      navigate('/help-support');
+      return;
+    }
+    if (item === 'Dashboard') {
+      navigate('/dashboard');
+    }
   };
 
   useEffect(() => {
@@ -108,23 +141,17 @@ export default function Dashboard() {
   const timeline = dashboardData?.timeline || [];
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins">
-      <div className="lg:hidden flex items-center justify-between px-4 py-4 bg-white border-b border-slate-200">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center"
-        >
-          <span className="text-xl">=</span>
-        </button>
-        <p className="text-sm font-semibold text-slate-800">Docu-Agent</p>
-        <div className="h-9 w-9 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm">
-          {userName[0]?.toUpperCase()}
-        </div>
-      </div>
+    <div className="min-h-screen text-slate-900 font-poppins app-shell page-shell">
+      <TopBar
+        title={t('dashboard')}
+        subtitle={`${t('welcomeBack')} ${userName}`}
+        showMenu
+        onMenuClick={() => setSidebarOpen(true)}
+      />
 
       <div className="lg:flex lg:min-h-screen">
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-8 transform transition-transform lg:translate-x-0 lg:static lg:transform-none lg:h-screen lg:sticky lg:top-0 ${
+            className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-8 transform transition-transform duration-200 lg:translate-x-0 lg:static lg:transform-none lg:h-screen lg:sticky lg:top-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -133,8 +160,8 @@ export default function Dashboard() {
             DA
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-800">Docu-Agent</p>
-            <p className="text-xs text-slate-500">GovTech Assistant</p>
+            <p className="text-sm font-semibold text-slate-800">{t('appName')}</p>
+            <p className="text-xs text-slate-500">{t('govTechAssistant')}</p>
           </div>
         </div>
 
@@ -150,14 +177,26 @@ export default function Dashboard() {
           ].map((item, index) => (
             <button
               key={item}
-              onClick={item === 'Logout' ? handleLogout : undefined}
-              className={`w-full text-left px-3 py-2 rounded-lg transition ${
+              onClick={() => handleNavClick(item)}
+              className={`w-full text-left px-3 py-2 rounded-lg transition-all duration-200 hover:-translate-y-0.5 ${
                 index === 0
                   ? 'bg-blue-50 text-blue-900 font-semibold'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              {item}
+              {item === 'Dashboard'
+                ? t('dashboard')
+                : item === 'My Schemes'
+                ? t('mySchemes')
+                : item === 'Documents'
+                ? t('documents')
+                : item === 'Profile'
+                ? t('profile')
+                : item === 'History'
+                ? t('history')
+                : item === 'Help & Support'
+                ? t('helpSupport')
+                : t('logout')}
             </button>
           ))}
         </nav>
@@ -172,17 +211,17 @@ export default function Dashboard() {
 
         <main className="flex-1">
           <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-10">
-          <header className="bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <header className="surface-card rounded-2xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm text-slate-500">Welcome back,</p>
+              <p className="text-sm text-slate-500">{t('welcomeBack')}</p>
               <h1 className="text-2xl font-semibold text-blue-900">{userName}</h1>
             </div>
             <div className="flex-1 max-w-md">
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>Profile completion</span>
+                <span>{t('profileCompletion')}</span>
                 <span>{stats?.profileCompletion ?? 0}%</span>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-slate-100">
+              <div className="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div
                   className="h-2 rounded-full bg-green-600"
                   style={{ width: `${stats?.profileCompletion ?? 0}%` }}
@@ -190,28 +229,38 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button className="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center">
+              <button className="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center transition hover:border-blue-200 hover:text-blue-900">
                 <span className="text-lg">!</span>
               </button>
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 transition hover:border-blue-200 hover:bg-blue-50/40"
                 >
                   <div className="h-8 w-8 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm">
                     {userName[0]?.toUpperCase()}
                   </div>
-                  <span className="text-sm text-slate-700">Account</span>
+                  <span className="text-sm text-slate-700">{t('account')}</span>
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Profile</button>
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50">Settings</button>
+                    <button
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        navigate('/profile');
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
+                    >
+                      {t('profile')}
+                    </button>
+                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50">
+                      {t('settings')}
+                    </button>
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
-                      Logout
+                      {t('logout')}
                     </button>
                   </div>
                 )}
@@ -227,27 +276,27 @@ export default function Dashboard() {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <QuickStatCard
-                title="Eligible Schemes"
+                title={t('eligibleSchemes')}
                 value={stats?.eligibleSchemes ?? 0}
-                helper="Matching now"
+                helper={t('matchingNow')}
                 icon={<span className="text-lg">A</span>}
               />
               <QuickStatCard
-                title="Needs Attention"
+                title={t('needsAttention')}
                 value={stats?.needsAttention ?? 0}
-                helper="Documents missing"
+                helper={t('documentsMissing')}
                 icon={<span className="text-lg">!</span>}
               />
               <QuickStatCard
-                title="Upcoming Deadlines"
+                title={t('upcomingDeadlines')}
                 value={stats?.upcomingDeadlines ?? 0}
-                helper="Due this week"
+                helper={t('dueThisWeek')}
                 icon={<span className="text-lg">D</span>}
               />
               <QuickStatCard
-                title="Profile Completion"
+                title={t('profileCompletion')}
                 value={`${stats?.profileCompletion ?? 0}%`}
-                helper="Almost there"
+                helper={t('almostThere')}
                 icon={<span className="text-lg">P</span>}
               />
             </div>
@@ -255,13 +304,13 @@ export default function Dashboard() {
 
           <section className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Schemes You Are Eligible For</h2>
-              <button className="text-sm text-blue-900 font-medium">View all</button>
+              <h2 className="text-lg font-semibold text-slate-900">{t('schemeEligibility')}</h2>
+              <button className="text-sm text-blue-900 font-medium">{t('viewAll')}</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {isLoading ? (
                 <div className="col-span-full rounded-2xl bg-white border border-slate-100 p-6 text-sm text-slate-500">
-                  Loading schemes...
+                  {t('loadingSchemes')}
                 </div>
               ) : (
                 schemes.map((scheme) => (
@@ -270,6 +319,9 @@ export default function Dashboard() {
                     name={scheme.name}
                     description={scheme.description}
                     deadline={scheme.deadline}
+                    statusLabel={t('statusEligible')}
+                    viewLabel={t('viewDetails')}
+                    deadlineLabel={t('deadline')}
                   />
                 ))
               )}
@@ -277,33 +329,39 @@ export default function Dashboard() {
           </section>
 
           <section className="mt-8">
-            <div className="rounded-2xl bg-amber-50 border border-amber-100 p-5">
+            <div className="rounded-2xl bg-amber-50 border border-amber-100 p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-semibold text-slate-900">You May Be Eligible - Action Needed</h3>
+                  <h3 className="text-base font-semibold text-slate-900">{t('actionNeeded')}</h3>
                   <p className="text-sm text-slate-600 mt-2">
-                    {attentionItems[0]?.message || 'No pending actions right now.'}
+                    {attentionItems[0]?.message || t('noPendingActions')}
                   </p>
                 </div>
-                <button className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-400">
-                  Upload Document
+                <button className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-400 transition">
+                  {t('uploadDocument')}
                 </button>
               </div>
             </div>
           </section>
 
           <section className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl bg-white border border-slate-100 p-5">
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-slate-900">Document Status</h3>
-                <button className="text-sm text-blue-900 font-medium">Manage Documents</button>
+                <h3 className="text-base font-semibold text-slate-900">{t('documentStatus')}</h3>
+                <button className="text-sm text-blue-900 font-medium">{t('manageDocuments')}</button>
               </div>
               <div className="mt-4">
                 {documents.map((doc) => (
                   <DocumentStatusRow
                     key={doc.id}
                     label={doc.label}
-                    status={doc.status === 'missing' ? 'Missing' : doc.status === 'verified' ? 'Verified' : 'Uploaded'}
+                    status={
+                      doc.status === 'missing'
+                        ? t('statusMissing')
+                        : doc.status === 'verified'
+                        ? t('statusVerified')
+                        : t('statusUploaded')
+                    }
                     tone={
                       doc.status === 'missing'
                         ? 'bg-amber-50 text-amber-700'
@@ -314,8 +372,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white border border-slate-100 p-5">
-              <h3 className="text-base font-semibold text-slate-900">Your Next Steps</h3>
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
+              <h3 className="text-base font-semibold text-slate-900">{t('yourNextSteps')}</h3>
               <ul className="mt-4 space-y-3 text-sm text-slate-700">
                 {nextSteps.map((step) => (
                   <li key={step.label} className="flex items-center gap-2">
@@ -332,19 +390,19 @@ export default function Dashboard() {
           </section>
 
           <section className="mt-8">
-            <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
               <p className="text-sm text-slate-700">
                 {banner?.message || 'Based on your profile, new schemes may be available.'}
               </p>
-              <button className="px-5 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800">
-                {banner?.cta || 'Check Now'}
+              <button className="px-5 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition">
+                {banner?.cta || t('checkNow')}
               </button>
             </div>
           </section>
 
           <section className="mt-8">
-            <h3 className="text-base font-semibold text-slate-900 mb-4">Activity Timeline</h3>
-            <div className="rounded-2xl bg-white border border-slate-100 p-5">
+            <h3 className="text-base font-semibold text-slate-900 mb-4">{t('activityTimeline')}</h3>
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
               <div className="space-y-5 border-l border-slate-200 pl-4">
                 {timeline.map((item) => (
                   <TimelineItem

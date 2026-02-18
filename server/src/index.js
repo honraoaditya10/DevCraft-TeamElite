@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import authRouter from './routes/auth.js';
 import dashboardRouter from './routes/dashboard.js';
+import profileRouter from './routes/profile.js';
 import { connectToDatabase } from './db.js';
 import User from './models/User.js';
 
@@ -24,6 +25,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/profile', profileRouter);
 
 const seedAdminUser = async () => {
   const existing = await User.findOne({ email: adminEmail.toLowerCase() });
