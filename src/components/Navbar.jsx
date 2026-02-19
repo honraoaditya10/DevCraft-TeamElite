@@ -24,6 +24,7 @@ export const Navbar = () => {
   const navRef = useRef(null);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isPlacementPage = false;
 
@@ -45,9 +46,14 @@ export const Navbar = () => {
   }, [isPlacementPage]);
 
   useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setDropdownOpen(false);
+        setMobileOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -95,7 +101,14 @@ export const Navbar = () => {
               </ul>
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 lg:gap-6">
+              <button
+                onClick={() => setMobileOpen((prev) => !prev)}
+                className="lg:hidden h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition"
+                aria-label="Toggle navigation"
+              >
+                <span className="text-xl">≡</span>
+              </button>
               {!user ? (
                 <>
                   <Link
@@ -155,6 +168,60 @@ export const Navbar = () => {
               )}
             </div>
           </div>
+
+          {mobileOpen && (
+            <div className="lg:hidden border-t border-slate-200 px-6 py-4">
+              <ul className="flex flex-col gap-3 text-sm font-medium text-slate-800">
+                <li>
+                  <Link
+                    to="/#how"
+                    className="transition hover:text-blue-900"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/#features"
+                    className="transition hover:text-blue-900"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/#results"
+                    className="transition hover:text-blue-900"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Results
+                  </Link>
+                </li>
+              </ul>
+              {!user && (
+                <div className="mt-4 flex flex-col gap-3">
+                  <Link
+                    to="/login"
+                    state={{ from: location.pathname }}
+                    className="text-sm text-slate-800 hover:text-blue-900 transition"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    state={{ from: location.pathname }}
+                    className="px-5 py-2 rounded-lg bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium transition"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </nav>

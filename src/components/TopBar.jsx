@@ -42,7 +42,7 @@ export const TopBar = ({
   const initials = user?.fullName?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || 'U';
 
   return (
-    <div className={`ml-30 sticky top-0 z-40 transition-transform duration-300 ${isHidden ? 'topbar-hidden' : ''}`}>
+    <div className={`sticky top-0 z-40 transition-transform duration-300 ${isHidden ? 'topbar-hidden' : ''}`}>
       <div className=" max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <div className="surface-card rounded-2xl px-4 py-3 relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
