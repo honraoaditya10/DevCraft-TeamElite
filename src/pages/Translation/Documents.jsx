@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { TopBar } from '../../components/TopBar';
+import { useLanguage } from '../../context/LanguageContext';
 
 const STORAGE_KEY = 'userDocuments';
 
@@ -15,6 +16,7 @@ const formatFileSize = (bytes) => {
 export default function Documents() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [incomeFile, setIncomeFile] = useState(null);
   const [casteFile, setCasteFile] = useState(null);
@@ -83,9 +85,22 @@ export default function Documents() {
   };
 
   const bothUploaded = !!documents.income && !!documents.caste;
+  const requiredDocs = [
+    { key: 'income', label: t('incomeCertificate') },
+    { key: 'caste', label: t('casteCertificate') }
+  ];
+  const missingDocs = requiredDocs.filter((doc) => !documents[doc.key]);
+  const englishPdfCount = Object.values(documents).filter((doc) =>
+    doc?.fileName?.toLowerCase().endsWith('.pdf')
+  ).length;
+
+  const todoItems = [];
+  if (!documents.income) todoItems.push(t('todoUploadIncome'));
+  if (!documents.caste) todoItems.push(t('todoUploadCaste'));
+  if (todoItems.length === 0) todoItems.push(t('todoAllSet'));
 
   return (
-    <div className="min-h-screen text-slate-900 font-poppins app-shell page-shell bg-slate-50">
+    <div className="min-h-screen text-slate-900 font-poppins app-shell page-shell">
       <TopBar
         title="Document Verification"
         subtitle="Upload your documents to complete your profile"
@@ -187,6 +202,51 @@ export default function Documents() {
             )}
           </div>
         </div>
+
+        <section className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">{t('missingDocGuard')}</h3>
+                <p className="text-sm text-slate-600 mt-1">{t('missingDocHint')}</p>
+              </div>
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${missingDocs.length ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                {missingDocs.length
+                  ? `${t('guardMissingPrefix')} ${missingDocs.length} / ${requiredDocs.length}`
+                  : t('guardAllSet')}
+              </span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {requiredDocs.map((doc) => {
+                const isMissing = missingDocs.some((missing) => missing.key === doc.key);
+                return (
+                  <div key={doc.key} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3">
+                    <span className="text-sm text-slate-700">{doc.label}</span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${isMissing ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                      {isMissing ? t('statusMissing') : t('statusUploaded')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 text-xs text-slate-500">
+              {t('processedEnglishPdfs')}: {englishPdfCount}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-900">{t('todoListTitle')}</h3>
+            <p className="text-sm text-slate-500 mt-1">{t('todoListHint')}</p>
+            <ul className="mt-4 space-y-2 text-sm text-slate-700">
+              {todoItems.map((item, index) => (
+                <li key={`${item}-${index}`} className="flex items-start gap-2">
+                  <span className="text-slate-400 mt-0.5">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
         {bothUploaded && (
           <div className="mt-8 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200 p-6">

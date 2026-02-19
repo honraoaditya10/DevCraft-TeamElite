@@ -171,16 +171,18 @@ export default function NormalUserAccount() {
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 flex items-center justify-center p-4 overflow-y-auto py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen app-shell page-shell flex items-center justify-center p-4 overflow-y-auto py-8 relative">
+      <div className="absolute -top-24 right-10 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl" />
+      <div className="w-full max-w-md relative">
+        <div className="surface-card rounded-3xl shadow-xl p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">DE</span>
+              <div className="w-10 h-10 bg-blue-900 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">DA</span>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">DevCraft</h1>
+              <h1 className="text-2xl font-bold text-blue-900">Docu-Agent</h1>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Profile</h2>
             <p className="text-gray-600 text-sm">Fill in your details to find matching schemes</p>

@@ -59,12 +59,17 @@ const TimelineItem = ({ title, detail, time }) => (
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const [localDocuments, setLocalDocuments] = useState({ income: null, caste: null });
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
@@ -139,6 +144,22 @@ export default function Dashboard() {
     fetchDashboard();
   }, [user, navigate, API_BASE_URL]);
 
+  useEffect(() => {
+    if (!user) return;
+    const saved = localStorage.getItem('userDocuments');
+    if (saved) {
+      const data = JSON.parse(saved);
+      setLocalDocuments({
+        income: data.income || null,
+        caste: data.caste || null
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    setChatMessages([{ id: 1, role: 'bot', text: t('chatGreeting') }]);
+  }, [language, t]);
+
   const stats = dashboardData?.stats;
   const schemes = dashboardData?.eligibleSchemes || [];
   const attentionItems = dashboardData?.attention || [];
@@ -146,6 +167,67 @@ export default function Dashboard() {
   const nextSteps = dashboardData?.nextSteps || [];
   const banner = dashboardData?.banner;
   const timeline = dashboardData?.timeline || [];
+  const profileCompletion = stats?.profileCompletion ?? 0;
+
+  const requiredDocs = [
+    { key: 'income', label: t('incomeCertificate') },
+    { key: 'caste', label: t('casteCertificate') }
+  ];
+  const missingDocs = requiredDocs.filter((doc) => !localDocuments[doc.key]);
+  const englishPdfCount = Object.values(localDocuments).filter((doc) =>
+    doc?.fileName?.toLowerCase().endsWith('.pdf')
+  ).length;
+
+  const todoItems = [];
+  if (!localDocuments.income) todoItems.push(t('todoUploadIncome'));
+  if (!localDocuments.caste) todoItems.push(t('todoUploadCaste'));
+  if (profileCompletion < 100) todoItems.push(t('todoVerifyProfile'));
+  if ((stats?.upcomingDeadlines ?? 0) > 0) todoItems.push(t('todoCheckDeadline'));
+  if (todoItems.length === 0) todoItems.push(t('todoAllSet'));
+
+  const getBotReply = (message) => {
+    const text = message.toLowerCase();
+    if (text.includes('document') || text.includes('doc') || text.includes('upload')) {
+      return t('chatHelpMissingDocs');
+    }
+    if (text.includes('profile') || text.includes('details')) {
+      return t('chatHelpProfile');
+    }
+    if (text.includes('scheme') || text.includes('eligibility')) {
+      return t('chatHelpSchemes');
+    }
+    return t('chatFallback');
+  };
+
+  const handleSendMessage = async () => {
+    const trimmed = chatInput.trim();
+    if (!trimmed) return;
+    const userMessage = { id: Date.now(), role: 'user', text: trimmed };
+    setChatMessages((prev) => [...prev, userMessage]);
+    setChatInput('');
+    setChatLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/chatbot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: trimmed })
+      });
+      const data = await response.json();
+      const reply = response.ok ? data.reply : getBotReply(trimmed);
+      setChatMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, role: 'bot', text: reply }
+      ]);
+    } catch {
+      setChatMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, role: 'bot', text: getBotReply(trimmed) }
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen text-slate-900 font-poppins app-shell page-shell">
@@ -357,7 +439,12 @@ export default function Dashboard() {
             <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-900">{t('documentStatus')}</h3>
-                <button className="text-sm text-blue-900 font-medium">{t('manageDocuments')}</button>
+                <button
+                  onClick={() => navigate('/documents')}
+                  className="text-sm text-blue-900 font-medium"
+                >
+                  {t('manageDocuments')}
+                </button>
               </div>
               <div className="mt-4">
                 {documents.map((doc) => (
@@ -382,19 +469,48 @@ export default function Dashboard() {
             </div>
 
             <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-slate-900">{t('yourNextSteps')}</h3>
+              <h3 className="text-base font-semibold text-slate-900">{t('todoListTitle')}</h3>
+              <p className="text-xs text-slate-500 mt-1">{t('todoListHint')}</p>
               <ul className="mt-4 space-y-3 text-sm text-slate-700">
-                {nextSteps.map((step) => (
-                  <li key={step.label} className="flex items-center gap-2">
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        step.done ? 'bg-green-600' : 'bg-blue-900'
-                      }`}
-                    />
-                    {step.label}
+                {todoItems.map((item, index) => (
+                  <li key={`${item}-${index}`} className="flex items-start gap-2">
+                    <span className="h-2 w-2 rounded-full bg-blue-900 mt-2" />
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
+            </div>
+          </section>
+
+          <section className="mt-8">
+            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">{t('missingDocGuard')}</h3>
+                  <p className="text-sm text-slate-600 mt-1">{t('missingDocHint')}</p>
+                </div>
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${missingDocs.length ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                  {missingDocs.length
+                    ? `${t('guardMissingPrefix')} ${missingDocs.length} / ${requiredDocs.length}`
+                    : t('guardAllSet')}
+                </span>
+              </div>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {requiredDocs.map((doc) => {
+                  const isMissing = missingDocs.some((missing) => missing.key === doc.key);
+                  return (
+                    <div key={doc.key} className="rounded-xl border border-slate-100 px-4 py-3 flex items-center justify-between">
+                      <span className="text-sm text-slate-700">{doc.label}</span>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${isMissing ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {isMissing ? t('statusMissing') : t('statusUploaded')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 text-xs text-slate-500">
+                {t('processedEnglishPdfs')}: {englishPdfCount}
+              </div>
             </div>
           </section>
 
@@ -427,6 +543,81 @@ export default function Dashboard() {
         </div>
         </main>
       </div>
+
+      <button
+        onClick={() => setChatOpen(true)}
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-blue-900 text-white text-xl font-semibold shadow-lg hover:bg-blue-800 transition flex items-center justify-center"
+        aria-label="Open chatbot"
+      >
+        💬
+      </button>
+
+      {chatOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setChatOpen(false)}
+          />
+          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">{t('chatTitle')}</h3>
+                <p className="text-xs text-slate-500">{t('chatSubtitle')}</p>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="h-8 w-8 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+              >
+                ×
+              </button>
+            </div>
+            <div className="px-5 py-4 space-y-3 max-h-[50vh] overflow-y-auto bg-slate-50">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`rounded-2xl px-4 py-2 text-sm max-w-[80%] ${
+                      message.role === 'user'
+                        ? 'bg-blue-900 text-white'
+                        : 'bg-white text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex justify-start">
+                  <div className="rounded-2xl px-4 py-2 text-sm max-w-[80%] bg-white text-slate-700 border border-slate-200">
+                    {t('chatThinking')}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-2">
+              <input
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') handleSendMessage();
+                }}
+                disabled={chatLoading}
+                placeholder={t('chatInputPlaceholder')}
+                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={chatLoading}
+                className="px-4 py-2 rounded-xl bg-blue-900 text-white text-sm font-semibold hover:bg-blue-800 disabled:opacity-60"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

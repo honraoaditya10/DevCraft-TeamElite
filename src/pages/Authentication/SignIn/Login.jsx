@@ -68,9 +68,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
-        <div className="flex gap-6 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div className="min-h-screen app-shell page-shell text-slate-900 font-poppins flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-emerald-200/40 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
+      <div className="w-full max-w-4xl relative">
+        <div className="flex gap-6 surface-card rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
           {/* Left Section - Form */}
           <div className="w-full lg:w-1/2 p-8 lg:p-12">
             {/* Header */}

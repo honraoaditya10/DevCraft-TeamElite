@@ -584,7 +584,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins">
+    <div className="min-h-screen app-shell page-shell text-slate-900 font-poppins">
       <style>{shimmerStyle}</style>
       <Navbar />
 
@@ -659,6 +659,83 @@ export default function Home() {
 
       {/* Features Section */}
       <FeatureCards />
+
+      {/* Auto-Fill Agent Spotlight */}
+      <section className="py-20 px-4 relative overflow-hidden bg-gradient-to-b from-white via-blue-50/40 to-white">
+        <div className="absolute -top-24 left-10 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl animate-float" />
+        <div className="absolute bottom-0 right-10 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl animate-float" style={{ animationDelay: '1.2s' }} />
+        <div className="max-w-7xl mx-auto relative">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-10 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-blue-100 text-blue-900 text-xs font-semibold">
+                Browser Extension Ready
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mt-5 leading-tight">
+                Auto-Fill Agent that submits <span className="text-blue-900">live scholarship forms</span>
+              </h2>
+              <p className="text-lg text-slate-600 mt-4 max-w-xl">
+                Map OCR-extracted data to every portal in seconds. The agent validates confidence, highlights gaps,
+                and fills the application while you review.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {['Smart field mapping', 'Confidence scoring', 'Safe review mode'].map((item) => (
+                  <span key={item} className="px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-600">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <a
+                  href="/auto-fill"
+                  className="px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold text-sm hover:bg-blue-800 transition"
+                >
+                  Launch Auto-Fill Agent
+                </a>
+                <a
+                  href="#how"
+                  className="px-6 py-3 rounded-xl border border-blue-900 text-blue-900 font-semibold text-sm hover:bg-blue-50 transition"
+                >
+                  See how it works
+                </a>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="rounded-3xl border border-slate-200 bg-white shadow-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Live Portal</p>
+                    <h3 className="text-lg font-semibold text-slate-900">National Scholarship Portal</h3>
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">Autofill ready</span>
+                </div>
+                <div className="mt-5 space-y-3">
+                  {[
+                    { label: 'Applicant Name', value: 'Aarav Mehta' },
+                    { label: 'Date of Birth', value: '2003-08-22' },
+                    { label: 'Annual Income', value: '185000' }
+                  ].map((field) => (
+                    <div key={field.label} className="grid grid-cols-[1fr_1.2fr] gap-3 items-center">
+                      <span className="text-xs text-slate-500">{field.label}</span>
+                      <div className="rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 bg-slate-50">
+                        {field.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 rounded-2xl bg-slate-900 text-white px-4 py-3 text-xs">
+                  Mapping complete: 9 of 9 fields matched
+                </div>
+              </div>
+              <div className="absolute -bottom-6 -right-6 rounded-3xl border border-slate-200 bg-white shadow-lg p-4 w-56">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Agent Log</p>
+                <p className="text-sm font-semibold text-slate-900 mt-2">Confidence: 94%</p>
+                <p className="text-xs text-slate-500 mt-1">3 fields auto-verified, 0 conflicts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* How It Works */}
       <HowItWorksFlowchart />

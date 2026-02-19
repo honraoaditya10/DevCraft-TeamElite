@@ -94,9 +94,11 @@ export default function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] text-slate-900 font-poppins flex items-center justify-center p-4 overflow-y-auto py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+    <div className="min-h-screen app-shell page-shell text-slate-900 font-poppins flex items-center justify-center p-4 overflow-y-auto py-8 relative">
+      <div className="absolute -top-24 right-10 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
+      <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl" />
+      <div className="w-full max-w-md relative">
+        <div className="surface-card rounded-3xl border border-slate-200 shadow-xl p-8">
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">

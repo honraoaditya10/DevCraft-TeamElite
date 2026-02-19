@@ -6,6 +6,7 @@ import authRouter from './routes/auth.js';
 import dashboardRouter from './routes/dashboard.js';
 import adminRouter from './routes/admin.js';
 import eligibilityRouter from './routes/eligibility.js';
+import chatbotRouter from './routes/chatbot.js';
 import { connectToDatabase } from './db.js';
 import User from './models/User.js';
 
@@ -61,6 +62,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/v2/eligibility', eligibilityRouter);
+app.use('/api/chatbot', chatbotRouter);
 
 /* =========================
    Admin Seeder

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { TopBar } from '../components/TopBar';
+import { translations } from '../i18n/translations';
 
 const EligibilityBadge = ({ status }) => {
   const colors = {
@@ -87,17 +88,17 @@ export default function EligibilityResults() {
   const [error, setError] = useState('');
 
   const todoHindi = [
-    'आय प्रमाणपत्र अपलोड करें',
-    'जाति प्रमाणपत्र अपलोड करें',
-    'प्रोफ़ाइल विवरण सत्यापित करें',
-    'आवेदन की अंतिम तिथि देखें'
-  ];
+    translations.hi?.todoUploadIncome,
+    translations.hi?.todoUploadCaste,
+    translations.hi?.todoVerifyProfile,
+    translations.hi?.todoCheckDeadline
+  ].filter(Boolean);
   const todoMarathi = [
-    'उत्पन्न प्रमाणपत्र अपलोड करा',
-    'जात प्रमाणपत्र अपलोड करा',
-    'प्रोफाइल तपशील पडताळा',
-    'अर्जाची अंतिम तारीख तपासा'
-  ];
+    translations.mr?.todoUploadIncome,
+    translations.mr?.todoUploadCaste,
+    translations.mr?.todoVerifyProfile,
+    translations.mr?.todoCheckDeadline
+  ].filter(Boolean);
 
   useEffect(() => {
     if (!user) {

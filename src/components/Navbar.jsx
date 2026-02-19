@@ -92,6 +92,14 @@ export const Navbar = () => {
                 </li>
                 <li>
                   <Link
+                    to="/auto-fill"
+                    className="transition hover:text-blue-900"
+                  >
+                    Auto-Fill Agent
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/#results"
                     className={`transition ${location.hash === '#results' ? 'text-blue-900' : 'hover:text-blue-900'}`}
                   >
@@ -188,6 +196,15 @@ export const Navbar = () => {
                     onClick={() => setMobileOpen(false)}
                   >
                     Features
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/auto-fill"
+                    className="transition hover:text-blue-900"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Auto-Fill Agent
                   </Link>
                 </li>
                 <li>

@@ -145,16 +145,18 @@ export default function StudentAccount() {
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 flex items-center justify-center p-4 overflow-y-auto py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen app-shell page-shell flex items-center justify-center p-4 overflow-y-auto py-8 relative">
+      <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-emerald-200/40 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
+      <div className="w-full max-w-md relative">
+        <div className="surface-card rounded-3xl shadow-xl p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">DE</span>
+              <div className="w-10 h-10 bg-blue-900 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">DA</span>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">DevCraft</h1>
+              <h1 className="text-2xl font-bold text-blue-900">Docu-Agent</h1>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Student Information</h2>
             <p className="text-gray-600 text-sm">Complete your profile step by step</p>
