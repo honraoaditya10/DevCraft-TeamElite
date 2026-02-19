@@ -86,7 +86,18 @@ export default function EligibilityResults() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+  const todoHindi = [
+    'आय प्रमाणपत्र अपलोड करें',
+    'जाति प्रमाणपत्र अपलोड करें',
+    'प्रोफ़ाइल विवरण सत्यापित करें',
+    'आवेदन की अंतिम तिथि देखें'
+  ];
+  const todoMarathi = [
+    'उत्पन्न प्रमाणपत्र अपलोड करा',
+    'जात प्रमाणपत्र अपलोड करा',
+    'प्रोफाइल तपशील पडताळा',
+    'अर्जाची अंतिम तारीख तपासा'
+  ];
 
   useEffect(() => {
     if (!user) {
@@ -94,26 +105,47 @@ export default function EligibilityResults() {
       return;
     }
 
-    fetchEligibilityResults();
+    loadSampleResults();
   }, [user, navigate]);
 
-  const fetchEligibilityResults = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/v2/eligibility/${user.id}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setResults(data);
-        setError('');
-      } else {
-        setError('Could not fetch eligibility results');
-      }
-    } catch (err) {
-      setError(`Error: ${err.message}`);
-    } finally {
+  const loadSampleResults = () => {
+    const saved = localStorage.getItem('userDocuments');
+    const data = saved ? JSON.parse(saved) : {};
+    const hasDocs = !!data.income && !!data.caste;
+
+    if (!hasDocs) {
+      setResults(null);
+      setError('Please upload both documents to see sample eligibility results.');
       setIsLoading(false);
+      return;
     }
+
+    const sample = {
+      eligible_count: 1,
+      partial_count: 0,
+      not_eligible_count: 1,
+      eligible_schemes: [
+        {
+          name: 'National Merit Scholarship (Sample)',
+          score: 92,
+          reason: 'Income and category match the eligibility criteria.',
+          missing: []
+        }
+      ],
+      partial_match_schemes: [],
+      not_eligible_schemes: [
+        {
+          name: 'State Excellence Grant (Sample)',
+          score: 35,
+          reason: 'Income exceeds the scheme limit.',
+          missing: ['Income below ₹5,00,000 required']
+        }
+      ]
+    };
+
+    setResults(sample);
+    setError('');
+    setIsLoading(false);
   };
 
   if (isLoading) {
@@ -131,7 +163,7 @@ export default function EligibilityResults() {
     <div className="min-h-screen text-slate-900 font-poppins app-shell page-shell">
       <TopBar
         title="Eligibility Results"
-        subtitle="AI-Powered Scholarship Matching"
+        subtitle="Sample Scholarship Matching"
         showBack
         backTo="/dashboard"
         showLogout
@@ -174,6 +206,31 @@ export default function EligibilityResults() {
                 <p className="text-xs text-green-600 mt-1">Analyzed for You</p>
               </div>
             </div>
+
+            <section className="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl border border-slate-200 p-5">
+                <h3 className="text-base font-semibold text-slate-900 mb-3">To-Do List (Hindi)</h3>
+                <ul className="space-y-2 text-sm text-slate-700">
+                  {todoHindi.map((item, index) => (
+                    <li key={`hi-${index}`} className="flex items-start gap-2">
+                      <span className="text-slate-400 mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bg-white rounded-xl border border-slate-200 p-5">
+                <h3 className="text-base font-semibold text-slate-900 mb-3">To-Do List (Marathi)</h3>
+                <ul className="space-y-2 text-sm text-slate-700">
+                  {todoMarathi.map((item, index) => (
+                    <li key={`mr-${index}`} className="flex items-start gap-2">
+                      <span className="text-slate-400 mt-0.5">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
 
             {/* Eligible Schemes */}
             {results.eligible_schemes && results.eligible_schemes.length > 0 && (

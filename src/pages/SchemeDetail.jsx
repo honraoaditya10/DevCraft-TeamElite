@@ -11,39 +11,93 @@ export default function SchemeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
-
   useEffect(() => {
     if (!user || !schemeId) {
       navigate('/dashboard');
       return;
     }
 
-    const fetchSchemeDetail = async () => {
-      try {
-        setLoading(true);
-        setError('');
+    const loadDemoScheme = () => {
+      setLoading(true);
+      setError('');
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/dashboard/scheme/${schemeId}?email=${encodeURIComponent(user.email)}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to load scheme details');
+      const eligibleScheme = {
+        schemeName: 'National Merit Scholarship (Sample)',
+        department: 'Ministry of Education',
+        schemeType: 'Merit-based',
+        region: 'Central (All India)',
+        state: 'All India',
+        deadline: '31 Mar 2026',
+        description: 'Sample scheme for students with strong academic performance and eligible income criteria.',
+        requiredDocs: {
+          income: true,
+          caste: true,
+          domicile: false,
+          aadhaar: true,
+          marksheet: true,
+          bank: true
         }
+      };
 
-        const data = await response.json();
-        setScheme(data.scheme);
-        setEligibility(data.eligibility);
-      } catch (err) {
-        setError(err.message || 'Failed to load scheme details');
-      } finally {
-        setLoading(false);
-      }
+      const ineligibleScheme = {
+        schemeName: 'State Excellence Grant (Sample)',
+        department: 'State Education Department',
+        schemeType: 'Need-based',
+        region: 'State',
+        state: 'Maharashtra',
+        deadline: '15 Apr 2026',
+        description: 'Sample scheme with strict income limits for state residents only.',
+        requiredDocs: {
+          income: true,
+          caste: true,
+          domicile: true,
+          aadhaar: true,
+          marksheet: true,
+          bank: true
+        }
+      };
+
+      const isIneligible = schemeId === '69969f0b3f6edd8d1e0dbbb1';
+      setScheme(isIneligible ? ineligibleScheme : eligibleScheme);
+      setEligibility(
+        isIneligible
+          ? {
+              eligible: false,
+              reasons: [
+                {
+                  field: 'Annual Income',
+                  met: false,
+                  message: 'Income exceeds the scheme limit of ₹5,00,000.'
+                },
+                {
+                  field: 'State Domicile',
+                  met: false,
+                  message: 'Applicant is not a state resident for this scheme.'
+                }
+              ]
+            }
+          : {
+              eligible: true,
+              reasons: [
+                {
+                  field: 'Annual Income',
+                  met: true,
+                  message: 'Income is within the allowed range.'
+                },
+                {
+                  field: 'Category',
+                  met: true,
+                  message: 'Category matches the scheme requirement.'
+                }
+              ]
+            }
+      );
+
+      setLoading(false);
     };
 
-    fetchSchemeDetail();
-  }, [user, schemeId, navigate, API_BASE_URL]);
+    loadDemoScheme();
+  }, [user, schemeId, navigate]);
 
   if (loading) {
     return (

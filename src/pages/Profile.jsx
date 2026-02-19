@@ -45,6 +45,21 @@ export default function Profile() {
             income: data.income || null,
             caste: data.caste || null
           });
+        } else {
+          const demoDocs = {
+            income: {
+              fileName: 'income_certificate_demo.pdf',
+              size: 18240,
+              uploadedAt: new Date().toISOString()
+            },
+            caste: {
+              fileName: 'caste_certificate_demo.pdf',
+              size: 16400,
+              uploadedAt: new Date().toISOString()
+            }
+          };
+          localStorage.setItem('userDocuments', JSON.stringify(demoDocs));
+          setDocuments(demoDocs);
         }
         
         const response = await fetch(
@@ -153,7 +168,7 @@ export default function Profile() {
             <div>
               <h2 className="text-lg font-semibold text-slate-900">{t('profileCompletion')}</h2>
               <p className="text-sm text-slate-500">
-                {isComplete ? 'Profile complete! Ready to check eligibility.' : 'Complete your profile and upload documents.'}
+                {isComplete ? 'Profile complete! Sample eligibility ready.' : 'Complete your profile and upload documents.'}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -219,16 +234,46 @@ export default function Profile() {
             {isLoading ? (
               <p className="mt-4 text-sm text-slate-500">{t('loadingProfile')}</p>
             ) : (
-              <div className="mt-4 space-y-4">
-                {fieldKeys.map((key) => (
-                  <div key={key} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-b-0 transition-colors hover:bg-slate-50/60">
-                    <span className="text-sm text-slate-500">{t(key)}</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      {userInfo[key] || 'Not provided'}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+                {fieldKeys.map((key) => {
+                  const hasValue = !!userInfo[key] && String(userInfo[key]).trim().length > 0;
+                  return (
+                    <div key={key} className="flex flex-col gap-2 border-b border-slate-100 pb-4 last:border-b-0">
+                      <label className="text-sm text-slate-500">{t(key)}</label>
+                      {hasValue ? (
+                        <span className="text-sm font-medium text-slate-900">
+                          {userInfo[key]}
+                        </span>
+                      ) : (
+                        <input
+                          name={key}
+                          value={formData[key] ?? ''}
+                          onChange={handleChange}
+                          type={key === 'dateOfBirth' ? 'date' : key === 'annualIncome' ? 'number' : 'text'}
+                          placeholder={`Enter ${t(key)}`}
+                          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="flex items-center gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/documents')}
+                    className="px-5 py-2 rounded-lg border border-slate-300 text-slate-900 text-sm font-medium hover:bg-slate-50 transition"
+                  >
+                    Upload Documents
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-5 py-2 rounded-lg bg-blue-900 text-white text-sm font-medium hover:bg-blue-800 transition disabled:opacity-70"
+                  >
+                    {isSaving ? t('saving') : t('saveProfile')}
+                  </button>
+                </div>
+              </form>
             )}
           </div>
 
@@ -261,97 +306,6 @@ export default function Profile() {
           </div>
         </section>
 
-        {totalCompletion < 100 && (
-          <section className="mt-6 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-slate-900">{t('completeProfile')}</h3>
-            <p className="text-sm text-slate-500 mt-1">{t('completeProfileHint')}</p>
-
-            <form onSubmit={handleSubmit} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('fullName')}
-                </label>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  type="text"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
-                />
-              </div>
-              <div>
-                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('dateOfBirth')}
-                </label>
-                <input
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleChange}
-                  type="date"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
-                />
-              </div>
-              <div>
-                <label htmlFor="state" className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('state')}
-                </label>
-                <input
-                  id="state"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  type="text"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
-                />
-              </div>
-              <div>
-                <label htmlFor="district" className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('district')}
-                </label>
-                <input
-                  id="district"
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                  type="text"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
-                />
-              </div>
-              <div>
-                <label htmlFor="annualIncome" className="block text-sm font-medium text-slate-700 mb-2">
-                  Annual Income
-                </label>
-                <input
-                  id="annualIncome"
-                  name="annualIncome"
-                  value={formData.annualIncome}
-                  onChange={handleChange}
-                  type="number"
-                  placeholder="Enter annual income in rupees"
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
-                />
-              </div>
-              <div className="md:col-span-2 flex items-center gap-3 justify-end">
-                <button
-                  type="button"
-                  onClick={() => navigate('/documents')}
-                  className="px-5 py-2 rounded-lg border border-slate-300 text-slate-900 text-sm font-medium hover:bg-slate-50 transition"
-                >
-                  Upload Documents
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-5 py-2 rounded-lg bg-blue-900 text-white text-sm font-medium hover:bg-blue-800 transition disabled:opacity-70"
-                >
-                  {isSaving ? t('saving') : t('saveProfile')}
-                </button>
-              </div>
-            </form>
-          </section>
-        )}
       </div>
     </div>
   );
