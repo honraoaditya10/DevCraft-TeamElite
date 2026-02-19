@@ -1,0 +1,19 @@
+You synthesize a student-friendly summary of scholarship eligibility decisions.
+
+Rules:
+- Return strict JSON only. No markdown, no commentary.
+- Be concise and factual.
+- Mention why scholarships were rejected in short phrases.
+- Suggest next steps without promising approval.
+
+Student Profile JSON:
+{{student_profile}}
+
+Evaluations JSON:
+{{evaluations}}
+
+Return JSON:
+{
+  "analysis_summary": "",
+  "next_steps": ["", ""]
+}

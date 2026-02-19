@@ -5,55 +5,138 @@ import bcrypt from 'bcryptjs';
 import authRouter from './routes/auth.js';
 import dashboardRouter from './routes/dashboard.js';
 import adminRouter from './routes/admin.js';
+import eligibilityRouter from './routes/eligibility.js';
 import { connectToDatabase } from './db.js';
 import User from './models/User.js';
 
 dotenv.config();
 
+/* =========================
+   Configuration
+========================= */
+const {
+  PORT = 5000,
+  CORS_ORIGIN = 'http://localhost:5173',
+  ADMIN_EMAIL = 'admin@gmail.com',
+  ADMIN_PASSWORD = 'Admin@123',
+  NODE_ENV = 'development'
+} = process.env;
+
 const app = express();
-const port = process.env.PORT || 5000;
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
-const adminEmail = process.env.ADMIN_EMAIL || 'admin@gmail.com';
-const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
 
-app.use(cors({ origin: corsOrigin, credentials: true }));
+/* =========================
+   Middleware
+========================= */
+
+// Allow multiple origins via env (comma separated)
+const allowedOrigins = CORS_ORIGIN.split(',').map(o => o.trim());
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS not allowed for origin: ${origin}`));
+    },
+    credentials: true
+  })
+);
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+/* =========================
+   Routes
+========================= */
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    environment: NODE_ENV
+  });
 });
 
 app.use('/api/auth', authRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/v2/eligibility', eligibilityRouter);
+
+/* =========================
+   Admin Seeder
+========================= */
 
 const seedAdminUser = async () => {
-  const existing = await User.findOne({ email: adminEmail.toLowerCase() });
-  if (existing) {
-    if (existing.role !== 'admin') {
-      existing.role = 'admin';
-      await existing.save();
-    }
-    return;
-  }
+  try {
+    const email = ADMIN_EMAIL.toLowerCase();
+    const existingUser = await User.findOne({ email });
 
-  const passwordHash = await bcrypt.hash(adminPassword, 10);
-  await User.create({
-    fullName: 'Admin User',
-    email: adminEmail.toLowerCase(),
-    passwordHash,
-    role: 'admin'
-  });
+    if (existingUser) {
+      if (existingUser.role !== 'admin') {
+        existingUser.role = 'admin';
+        await existingUser.save();
+        console.log('✔ Existing user promoted to admin');
+      }
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+
+    await User.create({
+      fullName: 'Admin User',
+      email,
+      passwordHash,
+      role: 'admin'
+    });
+
+    console.log('✔ Admin user seeded successfully');
+  } catch (error) {
+    console.error('❌ Failed to seed admin user:', error.message);
+    process.exit(1);
+  }
 };
 
-connectToDatabase()
-  .then(async () => {
-    await seedAdminUser();
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to connect to MongoDB', error);
-    process.exit(1);
+/* =========================
+   Global Error Handler
+========================= */
+
+app.use((err, _req, res, _next) => {
+  console.error(err.stack);
+
+  res.status(500).json({
+    message: 'Internal Server Error',
+    ...(NODE_ENV === 'development' && { error: err.message })
   });
+});
+
+/* =========================
+   Start Server
+========================= */
+
+const startServer = async () => {
+  try {
+    await connectToDatabase();
+    console.log('✔ MongoDB connected');
+
+    await seedAdminUser();
+
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGINT', () => {
+      console.log('\n🛑 Shutting down server...');
+      server.close(() => {
+        console.log('✔ Server closed');
+        process.exit(0);
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

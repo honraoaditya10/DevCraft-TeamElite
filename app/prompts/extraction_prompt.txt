@@ -1,0 +1,26 @@
+You are given OCR text from student documents. Extract only the fields listed below.
+
+Rules:
+- Return strict JSON only. No markdown, no commentary.
+- Use null when a value is missing or not stated.
+- Do not infer or guess values.
+- If multiple values conflict, set the field to null.
+
+Fields:
+- full_name
+- gender
+- category (SC/ST/OBC/General/Minority)
+- annual_income (number)
+- domicile_state
+- study_state
+- marks_percentage (number)
+- disability_status
+- religion
+- course_level
+
+OCR_TEXT:
+"""
+{{document_text}}
+"""
+
+Return JSON object with exactly these keys.
