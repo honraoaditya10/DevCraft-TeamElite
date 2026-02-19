@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: docu-agent-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: docu_agent
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docu-agent-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: docu-agent-cache
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: redis-cli -a ${REDIS_PASSWORD:-redis123} ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docu-agent-network
+
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docu-agent-server
+    ports:
+      - "8001:8001"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/docu_agent?authSource=admin
+      PORT: 8001
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_here}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      GOOGLE_GEMINI_API_KEY: ${GOOGLE_GEMINI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - docu-agent-network
+    restart: unless-stopped
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    container_name: docu-agent-fastapi
+    ports:
+      - "8002:8002"
+    environment:
+      FASTAPI_PORT: 8002
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      GOOGLE_GEMINI_API_KEY: ${GOOGLE_GEMINI_API_KEY:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - docu-agent-network
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-alpine
+    container_name: docu-agent-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev
+    environment:
+      - VITE_API_URL=http://localhost:8001
+      - VITE_FASTAPI_URL=http://localhost:8002
+    networks:
+      - docu-agent-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+  redis_data:
+
+networks:
+  docu-agent-network:
+    driver: bridge
+

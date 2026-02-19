@@ -5,14 +5,16 @@ import { useLanguage } from '../context/LanguageContext';
 import { TopBar } from '../components/TopBar';
 
 const QuickStatCard = ({ title, value, helper, icon }) => (
-  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-slate-500">{title}</p>
-        <p className="text-2xl font-semibold text-slate-900 mt-2">{value}</p>
-        <p className="text-xs text-slate-500 mt-1">{helper}</p>
+  <div className="rounded-2xl surface-card p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer group">
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <p className="text-xs sm:text-sm text-slate-500 font-medium uppercase tracking-wider">{title}</p>
+        <div className="mt-3 flex items-baseline gap-2">
+          <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">{value}</p>
+        </div>
+        <p className="text-xs text-slate-500 mt-2 group-hover:text-slate-600 transition">{helper}</p>
       </div>
-      <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-900 flex items-center justify-center">
+      <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-blue-900 flex items-center justify-center text-lg sm:text-2xl font-semibold flex-shrink-0 group-hover:shadow-lg transition-all">
         {icon}
       </div>
     </div>
@@ -20,21 +22,21 @@ const QuickStatCard = ({ title, value, helper, icon }) => (
 );
 
 const SchemeCard = ({ id, name, description, deadline, statusLabel, viewLabel, deadlineLabel, onViewDetails }) => (
-  <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">
-    <div className="flex items-center justify-between">
-      <h3 className="text-base font-semibold text-slate-900">{name}</h3>
-      <span className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">
+  <div className="rounded-2xl surface-card p-6 sm:p-7 flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group cursor-pointer h-full">
+    <div className="flex items-start justify-between gap-3 mb-4">
+      <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-blue-900 transition flex-1 line-clamp-2">{name}</h3>
+      <span className="text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1 rounded-full flex-shrink-0 whitespace-nowrap">
         {statusLabel}
       </span>
     </div>
-    <p className="text-sm text-slate-600 mt-3">{description}</p>
-    <div className="flex items-center justify-between mt-4">
-      <span className="text-xs text-slate-500">{deadlineLabel}: {deadline}</span>
+    <p className="text-sm text-slate-600 mt-2 line-clamp-2 flex-grow">{description}</p>
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-5 gap-3 pt-4 border-t border-slate-100">
+      <span className="text-xs text-slate-500 font-medium">{deadlineLabel}: <span className="font-semibold text-slate-700">{deadline}</span></span>
       <button
         onClick={() => onViewDetails(id)}
-        className="text-sm font-medium text-white bg-blue-900 px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+        className="w-full sm:w-auto text-sm font-bold text-white bg-gradient-to-r from-blue-900 to-blue-800 px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-200 active:scale-95"
       >
-        {viewLabel}
+        {viewLabel} →
       </button>
     </div>
   </div>
@@ -300,54 +302,56 @@ export default function Dashboard() {
 
         <main className="flex-1">
           <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-10">
-          <header className="surface-card rounded-2xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-sm text-slate-500">{t('welcomeBack')}</p>
-              <h1 className="text-2xl font-semibold text-blue-900">{userName}</h1>
+          <header className="surface-card rounded-3xl p-6 sm:p-8 flex flex-col gap-6 lg:gap-8 lg:flex-row lg:items-center lg:justify-between shadow-lg border border-slate-100/50">
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium uppercase tracking-widest">{t('welcomeBack')}</p>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent mt-2">{userName}</h1>
+              <p className="text-sm text-slate-600 mt-3 max-w-lg">{t('govTechAssistant')}</p>
             </div>
-            <div className="flex-1 max-w-md">
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span>{t('profileCompletion')}</span>
-                <span>{stats?.profileCompletion ?? 0}%</span>
+            <div className="w-full lg:w-80">
+              <div className="flex items-center justify-between text-xs text-slate-600 font-semibold mb-3">
+                <span className="uppercase tracking-wider">{t('profileCompletion')}</span>
+                <span className="bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent text-sm lg:text-base">{stats?.profileCompletion ?? 0}%</span>
               </div>
-              <div className="mt-2 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-3 rounded-full bg-slate-200/50 overflow-hidden shadow-inner">
                 <div
-                  className="h-2 rounded-full bg-green-600"
+                  className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg transition-all duration-500"
                   style={{ width: `${stats?.profileCompletion ?? 0}%` }}
                 />
               </div>
+              <p className="text-xs text-slate-500 mt-3">{100 - (stats?.profileCompletion ?? 0)}% remaining to complete</p>
             </div>
-            <div className="flex items-center gap-3">
-              <button className="h-10 w-10 rounded-lg border border-slate-200 flex items-center justify-center transition hover:border-blue-200 hover:text-blue-900">
-                <span className="text-lg">!</span>
+            <div className="flex items-center gap-3 lg:flex-col">
+              <button className="h-12 w-12 rounded-xl border border-slate-200 flex items-center justify-center transition hover:border-blue-900 hover:text-blue-900 hover:bg-blue-50 text-lg font-bold text-slate-600">
+                <span>!</span>
               </button>
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen((prev) => !prev)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 transition hover:border-blue-200 hover:bg-blue-50/40"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 transition hover:border-blue-900 hover:bg-blue-50/50 active:scale-95"
                 >
-                  <div className="h-8 w-8 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-900 to-blue-700 text-white flex items-center justify-center text-sm font-bold shadow-md">
                     {userName[0]?.toUpperCase()}
                   </div>
-                  <span className="text-sm text-slate-700">{t('account')}</span>
+                  <span className="text-sm font-semibold text-slate-700 hidden lg:inline">{t('account')}</span>
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-40 rounded-xl bg-white border border-slate-200 shadow-sm">
+                  <div className="absolute right-0 mt-3 w-48 rounded-xl bg-white border border-slate-200 shadow-xl z-50 overflow-hidden">
                     <button
                       onClick={() => {
                         setDropdownOpen(false);
                         navigate('/profile');
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50"
+                      className="block w-full text-left px-5 py-3 text-sm font-medium hover:bg-blue-50 transition text-slate-700"
                     >
                       {t('profile')}
                     </button>
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50">
+                    <button className="block w-full text-left px-5 py-3 text-sm font-medium hover:bg-blue-50 transition text-slate-700">
                       {t('settings')}
                     </button>
                     <button
                       onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      className="block w-full text-left px-5 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition"
                     >
                       {t('logout')}
                     </button>
@@ -357,51 +361,59 @@ export default function Dashboard() {
             </div>
           </header>
 
-          <section className="mt-6">
+          <section className="mt-8 lg:mt-10">
             {loadError && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="mb-6 rounded-xl border border-red-200 bg-red-50/80 px-5 py-4 text-sm text-red-700 font-medium">
                 {loadError}
               </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               <QuickStatCard
                 title={t('eligibleSchemes')}
                 value={stats?.eligibleSchemes ?? 0}
                 helper={t('matchingNow')}
-                icon={<span className="text-lg">A</span>}
+                icon="✓"
               />
               <QuickStatCard
                 title={t('needsAttention')}
                 value={stats?.needsAttention ?? 0}
                 helper={t('documentsMissing')}
-                icon={<span className="text-lg">!</span>}
+                icon="!"
               />
               <QuickStatCard
                 title={t('upcomingDeadlines')}
                 value={stats?.upcomingDeadlines ?? 0}
                 helper={t('dueThisWeek')}
-                icon={<span className="text-lg">D</span>}
+                icon="📅"
               />
               <QuickStatCard
                 title={t('profileCompletion')}
                 value={`${stats?.profileCompletion ?? 0}%`}
                 helper={t('almostThere')}
-                icon={<span className="text-lg">P</span>}
+                icon="👤"
               />
             </div>
           </section>
 
-          <section className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">{t('schemeEligibility')}</h2>
-              <button className="text-sm text-blue-900 font-medium">{t('viewAll')}</button>
+          <section className="mt-8 lg:mt-10">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{t('schemeEligibility')}</h2>
+                <p className="text-sm text-slate-600 mt-2">{schemes.length} {schemes.length === 1 ? 'scheme' : 'schemes'} available for you</p>
+              </div>
+              <button className="text-sm font-bold text-blue-900 hover:text-blue-800 transition whitespace-nowrap">{t('viewAll')} →</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
               {isLoading ? (
-                <div className="col-span-full rounded-2xl bg-white border border-slate-100 p-6 text-sm text-slate-500">
-                  {t('loadingSchemes')}
+                <div className="col-span-full rounded-2xl surface-card p-8 text-center">
+                  <p className="text-sm text-slate-600 font-medium">{t('loadingSchemes')}</p>
+                  <div className="mt-4 inline-flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-blue-900 animate-pulse"></div>
+                    <div className="h-2 w-2 rounded-full bg-blue-900 animate-pulse animation-delay-200"></div>
+                    <div className="h-2 w-2 rounded-full bg-blue-900 animate-pulse animation-delay-400"></div>
+                  </div>
                 </div>
-              ) : (
+              ) : schemes.length > 0 ? (
                 schemes.map((scheme) => (
                   <SchemeCard
                     key={scheme.id}
@@ -415,127 +427,145 @@ export default function Dashboard() {
                     onViewDetails={handleViewSchemeDetails}
                   />
                 ))
+              ) : (
+                <div className="col-span-full rounded-2xl surface-card p-8 text-center">
+                  <p className="text-sm text-slate-600">{t('noSchemesAvailable')}</p>
+                </div>
               )}
             </div>
           </section>
 
-          <section className="mt-8">
-            <div className="rounded-2xl bg-amber-50 border border-amber-100 p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900">{t('actionNeeded')}</h3>
-                  <p className="text-sm text-slate-600 mt-2">
+          <section className="mt-8 lg:mt-10">
+            <div className="rounded-3xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-6 sm:p-8 shadow-lg">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">⚡ {t('actionNeeded')}</h3>
+                  <p className="text-sm text-slate-700 mt-2 max-w-lg">
                     {attentionItems[0]?.message || t('noPendingActions')}
                   </p>
                 </div>
-                <button className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-400 transition">
-                  {t('uploadDocument')}
+                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all duration-200 active:scale-95 whitespace-nowrap">
+                  {t('uploadDocument')} →
                 </button>
               </div>
             </div>
           </section>
 
-          <section className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold text-slate-900">{t('documentStatus')}</h3>
+          <section className="mt-8 lg:mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+            {/* Document Status Card */}
+            <div className="rounded-3xl surface-card p-6 sm:p-8 shadow-lg border border-slate-100/50">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">📄 {t('documentStatus')}</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-1">{documents.length} documents required</p>
+                </div>
                 <button
                   onClick={() => navigate('/documents')}
-                  className="text-sm text-blue-900 font-medium"
+                  className="px-4 py-2 text-xs sm:text-sm font-bold text-blue-900 bg-blue-50 rounded-lg hover:bg-blue-100 transition whitespace-nowrap"
                 >
-                  {t('manageDocuments')}
+                  {t('manageDocuments')} →
                 </button>
               </div>
-              <div className="mt-4">
+              <div className="space-y-3">
                 {documents.map((doc) => (
-                  <DocumentStatusRow
-                    key={doc.id}
-                    label={doc.label}
-                    status={
+                  <div key={doc.id} className="flex items-center justify-between p-4 sm:p-5 rounded-2xl bg-slate-50 hover:bg-slate-100 transition">
+                    <span className="text-sm sm:text-base font-medium text-slate-800">{doc.label}</span>
+                    <span className={`text-xs sm:text-sm font-bold px-3 sm:px-4 py-1.5 rounded-full whitespace-nowrap ${
                       doc.status === 'missing'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {doc.status === 'missing'
                         ? t('statusMissing')
                         : doc.status === 'verified'
                         ? t('statusVerified')
-                        : t('statusUploaded')
-                    }
-                    tone={
-                      doc.status === 'missing'
-                        ? 'bg-amber-50 text-amber-700'
-                        : 'bg-green-50 text-green-700'
-                    }
-                  />
+                        : t('statusUploaded')}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-              <h3 className="text-base font-semibold text-slate-900">{t('todoListTitle')}</h3>
-              <p className="text-xs text-slate-500 mt-1">{t('todoListHint')}</p>
-              <ul className="mt-4 space-y-3 text-sm text-slate-700">
+            {/* To-Do List Card */}
+            <div className="rounded-3xl surface-card p-6 sm:p-8 shadow-lg border border-slate-100/50">
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900">✅ {t('todoListTitle')}</h3>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1">{todoItems.length} items</p>
+              </div>
+              <ul className="mt-6 space-y-3">
                 {todoItems.map((item, index) => (
-                  <li key={`${item}-${index}`} className="flex items-start gap-2">
-                    <span className="h-2 w-2 rounded-full bg-blue-900 mt-2" />
-                    <span>{item}</span>
+                  <li key={`${item}-${index}`} className="flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-50/50 to-blue-50 hover:from-blue-100/50 hover:to-blue-100 transition group">
+                    <span className="h-5 w-5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5 group-hover:shadow-lg transition">
+                      ✓
+                    </span>
+                    <span className="text-sm sm:text-base font-medium text-slate-700 group-hover:text-slate-900 transition">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </section>
 
-          <section className="mt-8">
-            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900">{t('missingDocGuard')}</h3>
-                  <p className="text-sm text-slate-600 mt-1">{t('missingDocHint')}</p>
+          <section className="mt-8 lg:mt-10">
+            <div className="rounded-3xl surface-card p-6 sm:p-8 shadow-lg border border-slate-100/50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="flex-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900">🛡️ {t('missingDocGuard')}</h3>
+                  <p className="text-sm text-slate-600 mt-2">{t('missingDocHint')}</p>
                 </div>
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${missingDocs.length ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                <span className={`text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 rounded-xl whitespace-nowrap flex-shrink-0 ${missingDocs.length ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
                   {missingDocs.length
                     ? `${t('guardMissingPrefix')} ${missingDocs.length} / ${requiredDocs.length}`
-                    : t('guardAllSet')}
+                    : `${t('guardAllSet')} ✓`}
                 </span>
               </div>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {requiredDocs.map((doc) => {
                   const isMissing = missingDocs.some((missing) => missing.key === doc.key);
                   return (
-                    <div key={doc.key} className="rounded-xl border border-slate-100 px-4 py-3 flex items-center justify-between">
-                      <span className="text-sm text-slate-700">{doc.label}</span>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${isMissing ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    <div key={doc.key} className={`rounded-2xl px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between transition ${isMissing ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100' : 'bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'}`}>
+                      <span className="font-medium text-slate-800">{doc.label}</span>
+                      <span className={`text-xs sm:text-sm font-bold px-3 py-1.5 rounded-lg ${isMissing ? 'bg-amber-200 text-amber-800' : 'bg-emerald-200 text-emerald-800'}`}>
                         {isMissing ? t('statusMissing') : t('statusUploaded')}
                       </span>
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-4 text-xs text-slate-500">
-                {t('processedEnglishPdfs')}: {englishPdfCount}
+              <div className="p-4 sm:p-5 rounded-xl bg-blue-50 border border-blue-100">
+                <p className="text-xs sm:text-sm text-blue-900 font-medium">
+                  <span className="font-bold">📊 {t('processedEnglishPdfs')}:</span> {englishPdfCount}/{requiredDocs.length}
+                </p>
+                <p className="text-xs text-blue-800 mt-2">All documents must be uploaded as English PDFs for verification.</p>
               </div>
             </div>
           </section>
 
-          <section className="mt-8">
-            <div className="rounded-2xl bg-blue-50 border border-blue-100 p-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
-              <p className="text-sm text-slate-700">
-                {banner?.message || 'Based on your profile, new schemes may be available.'}
-              </p>
-              <button className="px-5 py-2 bg-blue-900 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition">
-                {banner?.cta || t('checkNow')}
+          <section className="mt-8 lg:mt-10">
+            <div className="rounded-3xl bg-gradient-to-r from-blue-50 via-blue-50 to-indigo-50 border border-blue-200 p-6 sm:p-8 shadow-lg flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p className="text-base sm:text-lg font-semibold text-slate-900">💡 {banner?.message || 'Based on your profile, new schemes may be available.'}</p>
+              </div>
+              <button className="w-full sm:w-auto px-7 sm:px-8 py-3 bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all duration-200 active:scale-95 whitespace-nowrap">
+                {banner?.cta || t('checkNow')} →
               </button>
             </div>
           </section>
 
-          <section className="mt-8">
-            <h3 className="text-base font-semibold text-slate-900 mb-4">{t('activityTimeline')}</h3>
-            <div className="rounded-2xl bg-white border border-slate-100 p-5 shadow-sm">
-              <div className="space-y-5 border-l border-slate-200 pl-4">
+          <section className="mt-8 lg:mt-10">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900">📋 {t('activityTimeline')}</h3>
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">{timeline.length} activities</span>
+            </div>
+            <div className="rounded-3xl surface-card p-6 sm:p-8 shadow-lg border border-slate-100/50">
+              <div className="space-y-6 relative">
+                <div className="absolute left-3 sm:left-5 top-2 bottom-2 w-1 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent rounded-full" />
                 {timeline.map((item) => (
-                  <TimelineItem
-                    key={item.id}
-                    title={item.title}
-                    detail={item.detail}
-                    time={item.time}
-                  />
+                  <div key={item.id} className="relative pl-8 sm:pl-12 group hover:bg-blue-50/50 p-3 rounded-xl transition">
+                    <div className="absolute left-0 top-2.5 h-5 w-5 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-4 border-white shadow-lg group-hover:scale-110 transition" />
+                    <p className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-blue-900 transition">{item.title}</p>
+                    <p className="text-sm text-slate-600 mt-1">{item.detail}</p>
+                    <p className="text-xs text-slate-400 mt-2 font-medium">{item.time}</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -546,42 +576,43 @@ export default function Dashboard() {
 
       <button
         onClick={() => setChatOpen(true)}
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-blue-900 text-white text-xl font-semibold shadow-lg hover:bg-blue-800 transition flex items-center justify-center"
+        className="fixed bottom-8 right-8 z-40 h-16 w-16 rounded-full bg-gradient-to-br from-blue-900 to-blue-800 text-white text-2xl font-bold shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 active:scale-95 flex items-center justify-center border-4 border-white backdrop-blur-sm"
         aria-label="Open chatbot"
+        title="Chat with AI Assistant"
       >
         💬
       </button>
 
       {chatOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-0">
           <div
-            className="absolute inset-0 bg-black/30"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setChatOpen(false)}
           />
-          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in">
+            <div className="px-6 sm:px-7 py-5 bg-gradient-to-r from-blue-900 to-blue-800 text-white flex items-center justify-between">
               <div>
-                <h3 className="text-base font-semibold text-slate-900">{t('chatTitle')}</h3>
-                <p className="text-xs text-slate-500">{t('chatSubtitle')}</p>
+                <h3 className="text-lg sm:text-xl font-bold">{t('chatTitle')}</h3>
+                <p className="text-xs sm:text-sm text-blue-100 mt-1">{t('chatSubtitle')}</p>
               </div>
               <button
                 onClick={() => setChatOpen(false)}
-                className="h-8 w-8 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+                className="h-10 w-10 rounded-full bg-white/20 text-white hover:bg-white/30 transition flex items-center justify-center text-xl font-bold"
               >
-                ×
+                ✕
               </button>
             </div>
-            <div className="px-5 py-4 space-y-3 max-h-[50vh] overflow-y-auto bg-slate-50">
+            <div className="px-5 sm:px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto bg-gradient-to-b from-blue-50/30 to-white">
               {chatMessages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
                   <div
-                    className={`rounded-2xl px-4 py-2 text-sm max-w-[80%] ${
+                    className={`rounded-2xl px-5 py-3 text-sm sm:text-base max-w-[85%] font-medium ${
                       message.role === 'user'
-                        ? 'bg-blue-900 text-white'
-                        : 'bg-white text-slate-700 border border-slate-200'
+                        ? 'bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg'
+                        : 'bg-white text-slate-800 border border-slate-200 shadow-sm'
                     }`}
                   >
                     {message.text}
@@ -590,29 +621,37 @@ export default function Dashboard() {
               ))}
               {chatLoading && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl px-4 py-2 text-sm max-w-[80%] bg-white text-slate-700 border border-slate-200">
+                  <div className="rounded-2xl px-5 py-3 text-sm bg-white text-slate-700 border border-slate-200 shadow-sm flex items-center gap-2">
+                    <span className="inline-flex gap-1">
+                      <span className="h-2 w-2 rounded-full bg-blue-900 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="h-2 w-2 rounded-full bg-blue-900 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="h-2 w-2 rounded-full bg-blue-900 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
                     {t('chatThinking')}
                   </div>
                 </div>
               )}
             </div>
-            <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-2">
+            <div className="px-5 sm:px-6 py-4 border-t border-slate-200 flex items-center gap-3 bg-slate-50">
               <input
                 value={chatInput}
                 onChange={(event) => setChatInput(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter') handleSendMessage();
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    handleSendMessage();
+                  }
                 }}
                 disabled={chatLoading}
                 placeholder={t('chatInputPlaceholder')}
-                className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900"
+                className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent disabled:opacity-50 transition"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={chatLoading}
-                className="px-4 py-2 rounded-xl bg-blue-900 text-white text-sm font-semibold hover:bg-blue-800 disabled:opacity-60"
+                className="px-5 py-3 rounded-xl bg-gradient-to-r from-blue-900 to-blue-800 text-white text-sm font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 flex-shrink-0"
               >
-                Send
+                ↑
               </button>
             </div>
           </div>
