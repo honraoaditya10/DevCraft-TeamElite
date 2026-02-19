@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { TopBar } from '../../components/TopBar';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 const SchemeCard = ({ name, description, deadline, statusLabel, statusTone, viewLabel, deadlineLabel }) => (
   <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">

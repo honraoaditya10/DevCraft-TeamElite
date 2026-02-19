@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
+
 const sections = [
   'Overview',
   'Scheme Management',
@@ -14,41 +17,16 @@ const sections = [
   'Settings'
 ];
 
-const analyticsCards = [
-  { label: 'Total Schemes', value: '128' },
-  { label: 'Active Users', value: '14,250' },
-  { label: 'Eligibility Checks', value: '89,430' },
-  { label: 'Documents Verified', value: '22,110' }
+// Default data - will be replaced by API data
+const defaultAnalytics = [
+  { label: 'Total Schemes', value: '0' },
+  { label: 'Active Users', value: '0' },
+  { label: 'Published Schemes', value: '0' },
+  { label: 'Total Matches', value: '0' }
 ];
 
-const schemeRows = [
-  {
-    name: 'Post-Matric Scholarship',
-    department: 'Education',
-    state: 'Maharashtra',
-    status: 'Active',
-    deadline: '30 Mar 2025'
-  },
-  {
-    name: 'Merit Scholarship 2025',
-    department: 'Higher Education',
-    state: 'All India',
-    status: 'Active',
-    deadline: '15 Apr 2025'
-  },
-  {
-    name: 'Minority Scheme',
-    department: 'Minority Affairs',
-    state: 'Karnataka',
-    status: 'Paused',
-    deadline: '20 Apr 2025'
-  }
-];
-
-const activityFeed = [
-  { title: 'Scheme updated', detail: 'Merit Scholarship 2025 rules edited', time: '10 min ago' },
-  { title: 'AI extraction completed', detail: '2 new schemes ready for review', time: '2 hours ago' },
-  { title: 'Document verification', detail: '150 documents verified today', time: 'Today, 9:30 AM' }
+const defaultActivity = [
+  { title: 'No activity yet', detail: 'Create your first scheme to get started', time: 'Just now' }
 ];
 
 const userRows = [
@@ -76,10 +54,10 @@ const aiExtractedRules = [
 
 const usageSeries = [70, 50, 90, 60, 80, 65, 95];
 
-const OverviewSection = () => (
+const OverviewSection = ({ analytics, activity }) => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {analyticsCards.map((card) => (
+      {analytics.map((card) => (
         <div
           key={card.label}
           className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
@@ -92,24 +70,25 @@ const OverviewSection = () => (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-slate-900">Recent Activity</h3>
-        <button className="text-sm text-indigo-600">View all</button>
       </div>
       <div className="mt-4 space-y-4">
-        {activityFeed.map((item) => (
-          <div key={item.title} className="flex items-start justify-between gap-4">
+        {activity.length > 0 ? activity.map((item, idx) => (
+          <div key={idx} className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-slate-800">{item.title}</p>
               <p className="text-xs text-slate-500">{item.detail}</p>
             </div>
             <span className="text-xs text-slate-400">{item.time}</span>
           </div>
-        ))}
+        )) : (
+          <p className="text-sm text-slate-500">No recent activity</p>
+        )}
       </div>
     </div>
   </div>
 );
 
-const SchemeManagementSection = ({ onAddScheme }) => (
+const SchemeManagementSection = ({ schemes, onAddScheme, onViewStudents, onDeleteScheme, loading }) => (
   <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
     <div className="flex items-center justify-between">
       <h3 className="text-base font-semibold text-slate-900">Schemes</h3>
@@ -122,50 +101,71 @@ const SchemeManagementSection = ({ onAddScheme }) => (
       </button>
     </div>
     <div className="mt-4 overflow-auto">
-      <table className="w-full text-sm">
-        <thead className="text-left text-slate-500">
-          <tr>
-            <th className="pb-3">Scheme</th>
-            <th className="pb-3">Department</th>
-            <th className="pb-3">State</th>
-            <th className="pb-3">Status</th>
-            <th className="pb-3">Deadline</th>
-            <th className="pb-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="text-slate-700">
-          {schemeRows.map((row) => (
-            <tr key={row.name} className="border-t border-slate-100">
-              <td className="py-3 font-medium text-slate-900">{row.name}</td>
-              <td className="py-3">{row.department}</td>
-              <td className="py-3">{row.state}</td>
-              <td className="py-3">
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${
-                    row.status === 'Active'
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'bg-amber-50 text-amber-700'
-                  }`}
-                >
-                  {row.status}
-                </span>
-              </td>
-              <td className="py-3">{row.deadline}</td>
-              <td className="py-3">
-                <div className="flex items-center gap-2">
-                  <button className="text-indigo-600">Edit</button>
-                  <button className="text-slate-400">Delete</button>
-                </div>
-              </td>
+      {loading ? (
+        <p className="text-sm text-slate-500 py-4">Loading schemes...</p>
+      ) : schemes.length === 0 ? (
+        <p className="text-sm text-slate-500 py-4">No schemes yet. Create your first scheme!</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead className="text-left text-slate-500">
+            <tr>
+              <th className="pb-3">Scheme</th>
+              <th className="pb-3">Department</th>
+              <th className="pb-3">State</th>
+              <th className="pb-3">Status</th>
+              <th className="pb-3">Deadline</th>
+              <th className="pb-3">Matched</th>
+              <th className="pb-3">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="text-slate-700">
+            {schemes.map((row) => (
+              <tr key={row.id} className="border-t border-slate-100">
+                <td className="py-3 font-medium text-slate-900">{row.name}</td>
+                <td className="py-3">{row.department}</td>
+                <td className="py-3">{row.state}</td>
+                <td className="py-3">
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      row.status === 'Published'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : row.status === 'Draft'
+                        ? 'bg-slate-50 text-slate-700'
+                        : 'bg-amber-50 text-amber-700'
+                    }`}
+                  >
+                    {row.status}
+                  </span>
+                </td>
+                <td className="py-3">{row.deadline}</td>
+                <td className="py-3">
+                  <button 
+                    onClick={() => onViewStudents(row.id)}
+                    className="text-indigo-600 hover:underline"
+                  >
+                    {row.matchedStudents} students
+                  </button>
+                </td>
+                <td className="py-3">
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => onDeleteScheme(row.id)}
+                      className="text-rose-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   </div>
 );
 
-const AddSchemeSection = ({ onCancel }) => {
+const AddSchemeSection = ({ onCancel, onSchemeCreated, userEmail }) => {
   const [formData, setFormData] = useState({
     schemeName: '',
     department: '',
@@ -182,6 +182,7 @@ const AddSchemeSection = ({ onCancel }) => {
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [conditions, setConditions] = useState([
     {
       id: 1,
@@ -311,8 +312,56 @@ const AddSchemeSection = ({ onCancel }) => {
     setShowPublishModal(true);
   };
 
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = async () => {
     setShowPublishModal(false);
+    setSaving(true);
+
+    try {
+      console.log('Publishing scheme with userEmail:', userEmail);
+      
+      const schemeData = {
+        schemeName: formData.schemeName,
+        department: formData.department,
+        schemeType: formData.schemeType,
+        region: formData.region,
+        state: formData.state,
+        website: formData.website,
+        deadline: new Date(formData.deadline),
+        description: formData.description,
+        conditions,
+        requiredDocs,
+        status: 'Published',
+        visibility,
+        autoExtract
+      };
+
+      console.log('Scheme data to send:', schemeData);
+      console.log('Posting to:', `${API_URL}/admin/schemes?email=${userEmail}`);
+
+      const response = await fetch(`${API_URL}/admin/schemes?email=${userEmail}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schemeData)
+      });
+
+      console.log('Response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Server error response:', errorData);
+        throw new Error(errorData.message || 'Failed to create scheme');
+      }
+
+      const data = await response.json();
+      alert('Scheme published successfully!');
+      onSchemeCreated();
+      onCancel();
+    } catch (error) {
+      console.error('Publish error:', error);
+      alert(`Failed to publish scheme: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -896,23 +945,107 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('Overview');
   const [showAddScheme, setShowAddScheme] = useState(false);
+  const [schemes, setSchemes] = useState([]);
+  const [analytics, setAnalytics] = useState(defaultAnalytics);
+  const [activity, setActivity] = useState(defaultActivity);
+  const [loading, setLoading] = useState(true);
+  const [showStudentsModal, setShowStudentsModal] = useState(false);
+  const [selectedSchemeStudents, setSelectedSchemeStudents] = useState([]);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
       navigate('/login');
+    } else {
+      fetchAdminData();
     }
   }, [user, navigate]);
+
+  const fetchAdminData = async () => {
+    if (!user?.email) return;
+    
+    try {
+      setLoading(true);
+      
+      // Fetch schemes
+      const schemesRes = await fetch(`${API_URL}/admin/schemes?email=${user.email}`);
+      if (schemesRes.ok) {
+        const schemesData = await schemesRes.json();
+        setSchemes(schemesData.schemes || []);
+      }
+
+      // Fetch analytics
+      const analyticsRes = await fetch(`${API_URL}/admin/analytics?email=${user.email}`);
+      if (analyticsRes.ok) {
+        const analyticsData = await analyticsRes.json();
+        setAnalytics([
+          { label: 'Total Schemes', value: String(analyticsData.totalSchemes || 0) },
+          { label: 'Active Users', value: String(analyticsData.activeUsers || 0) },
+          { label: 'Published Schemes', value: String(analyticsData.activeSchemes || 0) },
+          { label: 'Total Users', value: String(analyticsData.totalUsers || 0) }
+        ]);
+        setActivity(analyticsData.activity || defaultActivity);
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewStudents = async (schemeId) => {
+    try {
+      const response = await fetch(`${API_URL}/admin/schemes/${schemeId}/students?email=${user.email}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedSchemeStudents(data.students || []);
+        setShowStudentsModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
+      alert('Failed to load students');
+    }
+  };
+
+  const handleDeleteScheme = async (schemeId) => {
+    if (!confirm('Are you sure you want to delete this scheme?')) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/admin/schemes/${schemeId}?email=${user.email}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('Scheme deleted successfully');
+        fetchAdminData();
+      } else {
+        throw new Error('Failed to delete');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete scheme');
+    }
+  };
 
   const content = useMemo(() => {
     switch (activeSection) {
       case 'Overview':
-        return <OverviewSection />;
+        return <OverviewSection analytics={analytics} activity={activity} />;
       case 'Scheme Management':
         return (
           <div className="space-y-6">
-            <SchemeManagementSection onAddScheme={() => setShowAddScheme(true)} />
+            <SchemeManagementSection 
+              schemes={schemes}
+              loading={loading}
+              onAddScheme={() => setShowAddScheme(true)}
+              onViewStudents={handleViewStudents}
+              onDeleteScheme={handleDeleteScheme}
+            />
             {showAddScheme && (
-              <AddSchemeSection onCancel={() => setShowAddScheme(false)} />
+              <AddSchemeSection 
+                userEmail={user?.email}
+                onCancel={() => setShowAddScheme(false)}
+                onSchemeCreated={fetchAdminData}
+              />
             )}
           </div>
         );
@@ -941,9 +1074,9 @@ export default function AdminDashboard() {
           />
         );
       default:
-        return <OverviewSection />;
+        return <OverviewSection analytics={analytics} activity={activity} />;
     }
-  }, [activeSection, showAddScheme]);
+  }, [activeSection, showAddScheme, schemes, analytics, activity, loading, user]);
 
   const handleLogout = () => {
     logout();
@@ -1006,6 +1139,63 @@ export default function AdminDashboard() {
           </header>
 
           <section className="mt-6">{content}</section>
+
+          {/* Students Modal */}
+          {showStudentsModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"  onClick={() => setShowStudentsModal(false)}>
+              <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900">Matched Students</h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowStudentsModal(false)}
+                    className="rounded-lg p-2 hover:bg-slate-100"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {selectedSchemeStudents.length === 0 ? (
+                  <p className="text-sm text-slate-500 py-4">No students matched yet</p>
+                ) : (
+                  <div className="overflow-auto max-h-96">
+                    <table className="w-full text-sm">
+                      <thead className="text-left text-slate-500">
+                        <tr>
+                          <th className="pb-3">Name</th>
+                          <th className="pb-3">Email</th>
+                          <th className="pb-3">State</th>
+                          <th className="pb-3">Role</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-slate-700">
+                        {selectedSchemeStudents.map((student) => (
+                          <tr key={student._id} className="border-t border-slate-100">
+                            <td className="py-3 font-medium text-slate-900">{student.fullName}</td>
+                            <td className="py-3">{student.email}</td>
+                            <td className="py-3">{student.state || 'N/A'}</td>
+                            <td className="py-3">
+                              <span className="rounded-full px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700">
+                                {student.role}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowStudentsModal(false)}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>

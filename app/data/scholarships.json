@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Merit Plus Scholarship",
+    "provider": "National Education Board",
+    "eligibility": {
+      "max_income": 300000,
+      "allowed_categories": ["SC", "ST", "OBC", "Minority"],
+      "min_marks": 75,
+      "eligible_states": ["All"],
+      "gender": "All"
+    },
+    "benefits": "Tuition fee waiver up to INR 50,000 per year"
+  },
+  {
+    "name": "Women in STEM Grant",
+    "provider": "Ministry of Science",
+    "eligibility": {
+      "max_income": 600000,
+      "allowed_categories": ["All"],
+      "min_marks": 70,
+      "eligible_states": ["Karnataka", "Tamil Nadu", "Maharashtra"],
+      "gender": "Female"
+    },
+    "benefits": "Annual stipend of INR 40,000"
+  },
+  {
+    "name": "State Domicile Support",
+    "provider": "State Welfare Department",
+    "eligibility": {
+      "max_income": 500000,
+      "allowed_categories": ["SC", "ST", "OBC", "General"],
+      "min_marks": 60,
+      "eligible_states": ["Rajasthan"],
+      "gender": "All"
+    },
+    "benefits": "One-time grant of INR 25,000"
+  }
+]

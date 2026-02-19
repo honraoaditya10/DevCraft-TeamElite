@@ -10,7 +10,8 @@ const computeProfileCompletion = (user) => {
     user?.role,
     user?.dateOfBirth,
     user?.state,
-    user?.district
+    user?.district,
+    user?.annualIncome
   ];
   const filled = fields.filter((value) => Boolean(value && String(value).trim())).length;
   return Math.round((filled / fields.length) * 100);
@@ -37,7 +38,8 @@ router.get('/', async (req, res) => {
         role: user.role,
         dateOfBirth: user.dateOfBirth || '',
         state: user.state || '',
-        district: user.district || ''
+        district: user.district || '',
+        annualIncome: user.annualIncome || null
       },
       profileCompletion
     });
@@ -49,7 +51,7 @@ router.get('/', async (req, res) => {
 
 router.put('/', async (req, res) => {
   try {
-    const { email, fullName, dateOfBirth, state, district } = req.body;
+    const { email, fullName, dateOfBirth, state, district, annualIncome } = req.body;
     const normalizedEmail = (email || '').toLowerCase();
 
     if (!normalizedEmail) {
@@ -65,6 +67,7 @@ router.put('/', async (req, res) => {
     if (typeof dateOfBirth === 'string') user.dateOfBirth = dateOfBirth.trim();
     if (typeof state === 'string') user.state = state.trim();
     if (typeof district === 'string') user.district = district.trim();
+    if (typeof annualIncome === 'number') user.annualIncome = annualIncome;
 
     await user.save();
 
@@ -77,7 +80,8 @@ router.put('/', async (req, res) => {
         role: user.role,
         dateOfBirth: user.dateOfBirth || '',
         state: user.state || '',
-        district: user.district || ''
+        district: user.district || '',
+        annualIncome: user.annualIncome || null
       },
       profileCompletion
     });

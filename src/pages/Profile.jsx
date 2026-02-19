@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { TopBar } from '../components/TopBar';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
-const fieldKeys = ['fullName', 'email', 'role', 'dateOfBirth', 'state', 'district'];
+const fieldKeys = ['fullName', 'email', 'role', 'dateOfBirth', 'state', 'district', 'annualIncome'];
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -17,12 +17,14 @@ export default function Profile() {
     fullName: '',
     dateOfBirth: '',
     state: '',
-    district: ''
+    district: '',
+    annualIncome: ''
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [documents, setDocuments] = useState({ income: null, caste: null });
 
   useEffect(() => {
     if (!user) {
@@ -34,6 +36,17 @@ export default function Profile() {
       try {
         setIsLoading(true);
         setError('');
+        
+        // Load documents from localStorage
+        const saved = localStorage.getItem('userDocuments');
+        if (saved) {
+          const data = JSON.parse(saved);
+          setDocuments({
+            income: data.income || null,
+            caste: data.caste || null
+          });
+        }
+        
         const response = await fetch(
           `${API_BASE_URL}/api/profile?email=${encodeURIComponent(user.email)}`
         );
@@ -48,7 +61,8 @@ export default function Profile() {
           fullName: data.user?.fullName || '',
           dateOfBirth: data.user?.dateOfBirth || '',
           state: data.user?.state || '',
-          district: data.user?.district || ''
+          district: data.user?.district || '',
+          annualIncome: data.user?.annualIncome || ''
         });
       } catch (fetchError) {
         setError(fetchError.message || 'Failed to load profile');
@@ -60,8 +74,13 @@ export default function Profile() {
     fetchProfile();
   }, [user, navigate]);
 
-  const completion = profileData?.profileCompletion ?? 0;
-  const isComplete = completion >= 100;
+  // Calculate completion: 50% for base profile + 50% for documents
+  const documentCompletion = [
+    documents.income ? 25 : 0,
+    documents.caste ? 25 : 0
+  ].reduce((a, b) => a + b, 0);
+  const totalCompletion = 50 + documentCompletion;
+  const isComplete = totalCompletion >= 100;
 
   const missingFields = useMemo(() => {
     const userData = profileData?.user || {};
@@ -94,7 +113,8 @@ export default function Profile() {
           fullName: formData.fullName,
           dateOfBirth: formData.dateOfBirth,
           state: formData.state,
-          district: formData.district
+          district: formData.district,
+          annualIncome: formData.annualIncome ? Number(formData.annualIncome) : null
         })
       });
 
@@ -133,12 +153,12 @@ export default function Profile() {
             <div>
               <h2 className="text-lg font-semibold text-slate-900">{t('profileCompletion')}</h2>
               <p className="text-sm text-slate-500">
-                {isComplete ? t('completionDone') : t('completionHint')}
+                {isComplete ? 'Profile complete! Ready to check eligibility.' : 'Complete your profile and upload documents.'}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <span className={`text-sm font-semibold ${isComplete ? 'text-green-700' : 'text-blue-900'}`}>
-                {completion}%
+                {totalCompletion}%
               </span>
               <span
                 className={`text-xs font-medium px-3 py-1 rounded-full ${
@@ -152,8 +172,32 @@ export default function Profile() {
           <div className="mt-4 h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
               className={`h-2 rounded-full ${isComplete ? 'bg-green-600' : 'bg-blue-900'}`}
-              style={{ width: `${completion}%` }}
+              style={{ width: `${totalCompletion}%` }}
             />
+          </div>
+          
+          {/* Breakdown */}
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-slate-600">Profile Information: <strong>50%</strong></p>
+                <div className="h-1.5 rounded-full bg-slate-100 mt-2">
+                  <div className="h-1.5 rounded-full bg-blue-500" style={{ width: '50%' }} />
+                </div>
+              </div>
+              <div>
+                <p className="text-slate-600">Documents: <strong>{documentCompletion}%</strong></p>
+                <div className="h-1.5 rounded-full bg-slate-100 mt-2">
+                  <div className="h-1.5 rounded-full bg-emerald-500" style={{ width: `${documentCompletion}%` }} />
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-3">
+              {!documents.income && '📄 Income Certificate pending'} 
+              {!documents.caste && documents.income && ' • Caste Certificate pending'}
+              {!documents.caste && !documents.income && ''}
+              {documents.income && documents.caste && '✅ All documents uploaded'}
+            </p>
           </div>
         </section>
 
@@ -189,25 +233,35 @@ export default function Profile() {
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-slate-900">{t('missingDetails')}</h3>
+            <h3 className="text-base font-semibold text-slate-900">Verification Status</h3>
             {isLoading ? (
               <p className="mt-4 text-sm text-slate-500">Checking status...</p>
-            ) : missingFields.length === 0 ? (
-              <p className="mt-4 text-sm text-green-700">{t('allDetailsFilled')}</p>
             ) : (
-              <ul className="mt-4 space-y-2 text-sm text-slate-600">
-                {missingFields.map((field) => (
-                  <li key={field} className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-amber-500 shadow-sm" />
-                    {t(field)}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4 space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${documents.income ? 'bg-green-500' : 'bg-amber-500'}`} />
+                  <span className="text-slate-600">
+                    {documents.income ? '✓ Income Certificate' : 'Income Certificate pending'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${documents.caste ? 'bg-green-500' : 'bg-amber-500'}`} />
+                  <span className="text-slate-600">
+                    {documents.caste ? '✓ Caste Certificate' : 'Caste Certificate pending'}
+                  </span>
+                </div>
+              </div>
             )}
+            <button
+              onClick={() => navigate('/documents')}
+              className="w-full mt-4 px-3 py-2 rounded-lg bg-blue-900 text-white text-sm font-medium hover:bg-blue-800 transition"
+            >
+              Manage Documents
+            </button>
           </div>
         </section>
 
-        {!isComplete && (
+        {totalCompletion < 100 && (
           <section className="mt-6 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">{t('completeProfile')}</h3>
             <p className="text-sm text-slate-500 mt-1">{t('completeProfileHint')}</p>
@@ -265,7 +319,28 @@ export default function Profile() {
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
                 />
               </div>
-              <div className="md:col-span-2 flex items-center justify-end">
+              <div>
+                <label htmlFor="annualIncome" className="block text-sm font-medium text-slate-700 mb-2">
+                  Annual Income
+                </label>
+                <input
+                  id="annualIncome"
+                  name="annualIncome"
+                  value={formData.annualIncome}
+                  onChange={handleChange}
+                  type="number"
+                  placeholder="Enter annual income in rupees"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-900"
+                />
+              </div>
+              <div className="md:col-span-2 flex items-center gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/documents')}
+                  className="px-5 py-2 rounded-lg border border-slate-300 text-slate-900 text-sm font-medium hover:bg-slate-50 transition"
+                >
+                  Upload Documents
+                </button>
                 <button
                   type="submit"
                   disabled={isSaving}

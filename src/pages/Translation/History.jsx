@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { TopBar } from '../../components/TopBar';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 const TimelineItem = ({ title, detail, time }) => (
   <div className="relative pl-6 py-3 border-b border-slate-100 last:border-b-0 transition-colors hover:bg-slate-50/60">

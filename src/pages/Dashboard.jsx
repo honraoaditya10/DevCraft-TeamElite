@@ -19,7 +19,7 @@ const QuickStatCard = ({ title, value, helper, icon }) => (
   </div>
 );
 
-const SchemeCard = ({ name, description, deadline, statusLabel, viewLabel, deadlineLabel }) => (
+const SchemeCard = ({ id, name, description, deadline, statusLabel, viewLabel, deadlineLabel, onViewDetails }) => (
   <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-100 flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-blue-100">
     <div className="flex items-center justify-between">
       <h3 className="text-base font-semibold text-slate-900">{name}</h3>
@@ -30,7 +30,10 @@ const SchemeCard = ({ name, description, deadline, statusLabel, viewLabel, deadl
     <p className="text-sm text-slate-600 mt-3">{description}</p>
     <div className="flex items-center justify-between mt-4">
       <span className="text-xs text-slate-500">{deadlineLabel}: {deadline}</span>
-      <button className="text-sm font-medium text-white bg-blue-900 px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+      <button
+        onClick={() => onViewDetails(id)}
+        className="text-sm font-medium text-white bg-blue-900 px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+      >
         {viewLabel}
       </button>
     </div>
@@ -63,13 +66,17 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
   const userName = user?.fullName || user?.name || 'User';
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleViewSchemeDetails = (schemeId) => {
+    navigate(`/scheme/${schemeId}`);
   };
 
   const handleNavClick = (item) => {
@@ -151,7 +158,7 @@ export default function Dashboard() {
 
       <div className="lg:flex lg:min-h-screen">
         <aside
-            className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 p-6 flex flex-col gap-8 transform transition-transform duration-200 lg:translate-x-0 lg:static lg:transform-none lg:h-screen lg:sticky lg:top-0 ${
+            className={`fixed inset-y-0 left-0 z-40 w-64 rounded-3xl bg-white border-r border-slate-200 p-6 flex flex-col gap-8 transform transition-transform duration-200 lg:translate-x-0 lg:static lg:transform-none lg:h-screen lg:sticky lg:top-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -316,12 +323,14 @@ export default function Dashboard() {
                 schemes.map((scheme) => (
                   <SchemeCard
                     key={scheme.id}
+                    id={scheme.id}
                     name={scheme.name}
                     description={scheme.description}
                     deadline={scheme.deadline}
                     statusLabel={t('statusEligible')}
                     viewLabel={t('viewDetails')}
                     deadlineLabel={t('deadline')}
+                    onViewDetails={handleViewSchemeDetails}
                   />
                 ))
               )}
